@@ -1,0 +1,51 @@
+﻿<Window x:Class="AppLauncher.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Curt" Height="95" Width="610" ResizeMode="NoResize" ShowInTaskbar="False" WindowStyle="None" Deactivated="Window_Deactivated" MouseDown="Window_MouseDown" Topmost="True">
+    
+    <Grid x:Name="Background">
+        <Grid.Background>
+            <RadialGradientBrush>
+                <GradientStop Color="#FF28233E" Offset="1"/>
+                <GradientStop Color="#FF3B23A8"/>
+            </RadialGradientBrush>
+        </Grid.Background>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="260*"/>
+            <ColumnDefinition Width="260*"/>
+        </Grid.ColumnDefinitions>       
+        <ListView x:Name="ListView1" HorizontalAlignment="Center"  Height="auto" VerticalAlignment="Top" Width="600" Grid.ColumnSpan="2" Margin="5,66,5,0" Background="#FF415681" Opacity="0.9" FontSize="20" FontFamily="Segoe WP Semibold" FontWeight="Bold" ScrollViewer.HorizontalScrollBarVisibility="Disabled" ScrollViewer.VerticalScrollBarVisibility="Disabled" KeyDown="ListView1_KeyDown" Visibility="Hidden" Focusable="True" MouseDoubleClick="ListView1_MouseDoubleClick" >
+            <ListView.ItemContainerStyle>
+                <Style TargetType="ListViewItem">
+                    <Setter Property="Height" Value="40"></Setter>                   
+                </Style>
+            </ListView.ItemContainerStyle>
+            <ListView.Resources>
+                <Style  TargetType="{x:Type GridViewColumnHeader}">
+                    <Setter Property="Visibility" Value="Collapsed" />
+                </Style>
+            </ListView.Resources>
+
+            <ListView.View>
+
+                <GridView>
+                    <GridViewColumn Width="50">
+                        <GridViewColumn.CellTemplate>
+                            <DataTemplate>
+                                <Image Source="{Binding ImgSrc}"></Image>
+
+                            </DataTemplate>
+                        </GridViewColumn.CellTemplate>
+                    </GridViewColumn>
+                    <GridViewColumn  DisplayMemberBinding="{Binding Content}" Width="350"/>
+                    <GridViewColumn  DisplayMemberBinding="{Binding Option}" Width="200"/>
+                </GridView>
+            </ListView.View>
+        </ListView>
+        <TextBox x:Name="TextBar1" FocusVisualStyle="{x:Null}" HorizontalAlignment="Center" Height="40"  VerticalAlignment="Top" Width="600" RenderTransformOrigin="0.5,0.522" Grid.ColumnSpan="2" TextChanged="TextBar1_TextChanged"  PreviewKeyDown="TextBar1_PreviewKeyDown" BorderThickness="3" Background="#FFB8B2B2" Margin="0,26,0,0" Opacity="0.9" FontSize="25" FontFamily="Segoe WP Semibold" MaxLines="1" Foreground="#FF4B4343" BorderBrush="#FF1C1B38" SelectionBrush="#FF2F2378" LostFocus="TextBar1_LostFocus" GotFocus="TextBar1_GotFocus"  >
+            
+        </TextBox>
+    
+    </Grid>
+
+</Window>
