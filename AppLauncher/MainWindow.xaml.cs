@@ -4,30 +4,19 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Diagnostics;
 using System.Linq;
-using System.Net;
-using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
-using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 using System.Runtime.InteropServices;
 using System.Windows.Threading;
-using Microsoft.Win32;
-using System.Data.OleDb;
 using System.Drawing;
 using AppLauncher.Models;
-using System.Runtime.Serialization;
-using System.Runtime.Serialization.Formatters.Binary;
 using System.IO;
-using System.Reflection;
 using ProtoBuf;
+
 
 namespace AppLauncher
 {
@@ -41,45 +30,54 @@ namespace AppLauncher
         string mode = "app";
         [ProtoMember(1)]
         List<Executable> software = new List<Executable>();
-
+       
         public MainWindow()
         {
             InitializeComponent();
-           // Startup.RemoveStartup();
-            bool start = Startup.SetStartup();
             HotKey _hotKey = new HotKey(Key.Z, KeyModifier.Shift | KeyModifier.Win, OnHotKeyHandler);
             TextBar1.Focus();
-
-            if (start == true)
-                AsyncGetSoftware();
-            else
-            {
-                using (var file = File.OpenRead("InstalledSoftware.bin"))
-                {
-                    file.Position = 0;
-                    software = Serializer.Deserialize<List<Executable>>(file);
-                }
-                foreach (Executable e in software)
-                {
-                    try
-                    {
-                        Icon ico = System.Drawing.Icon.ExtractAssociatedIcon(e.Location.ToString());
-                         e.ImgSrc = System.Windows.Interop.Imaging.CreateBitmapSourceFromHIcon(ico.Handle, System.Windows.Int32Rect.Empty, System.Windows.Media.Imaging.BitmapSizeOptions.FromEmptyOptions());                    
-                    }
-                    catch (Exception) { }
-                }
-            }
-
+            //Startup.RemoveStartup();
+            if ( Startup.SetStartup())
+                WriteFile(Startup.GetInitialLocations());
+            FileDeserialization();
+            
         }
 
-        public async void AsyncGetSoftware()
+
+        public async void WriteFile(List<DirSearchItem> locations)
         {
-            software = await Startup.GetInstalledSoftware();
-            using (var file = File.Create("InstalledSoftware.bin"))
+            software = await Startup.GetInstalledSoftware(locations);
+            using (var file = File.OpenWrite("InstalledSoftware.bin"))
             {
+                file.Position = file.Length;
                 Serializer.Serialize<List<Executable>>(file, software);      
             }          
         }
+
+        private async void FileDeserialization()
+        {
+            using (var file = File.OpenRead("InstalledSoftware.bin"))
+            {
+                file.Position = 0;
+                software = Serializer.Deserialize<List<Executable>>(file);
+            }
+            //get icons
+            foreach (Executable e in software)
+            {
+                try
+                {
+                    Icon ico = System.Drawing.Icon.ExtractAssociatedIcon(e.Location.ToString());
+                    e.ImgSrc = System.Windows.Interop.Imaging.CreateBitmapSourceFromHIcon(ico.Handle, System.Windows.Int32Rect.Empty, System.Windows.Media.Imaging.BitmapSizeOptions.FromEmptyOptions());
+                    e.ImgSrc.Freeze();
+                }
+                catch (Exception) { }
+            }
+        }
+
+        
+
+
+
         #region OperatingModes
         private async Task<List<DropDownItem>> AppSearch(string text)
         {
@@ -92,7 +90,6 @@ namespace AppLauncher
                     {
                         searchList.Add(new DropDownItem { Content = e.Name.Substring(0, e.Name.Length - 4), Path = e.Location, ImgSrc = e.ImgSrc, LastUsed = e.LastUsed, Option = e.LastUsed.ToShortDateString() });
                     }
-
                 }
             }
             searchList.Sort();
@@ -103,6 +100,7 @@ namespace AppLauncher
         }
         private async Task<string> Calculator(string text)
         {
+            
             NCalc.Expression exp;
             string setString = text;
             bool flag = false;
@@ -293,8 +291,13 @@ namespace AppLauncher
             TextBar1.Clear();
         }
 
-        
 
+        private void SettingsButton_Click(object sender, RoutedEventArgs e)
+        {
+            Window settingsWin = new SettingsWindow();
+            settingsWin.Show();
+            this.Close();
+        }
 
         private void OnHotKeyHandler(HotKey hotKey)
         {
@@ -308,6 +311,10 @@ namespace AppLauncher
         }
         #endregion
 
+       
 
+        
+
+      
     }
 }

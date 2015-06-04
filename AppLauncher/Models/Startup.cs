@@ -1,12 +1,10 @@
 ﻿using Microsoft.Win32;
 using System;
 using System.Collections.Generic;
-using System.Drawing;
-using System.Linq;
-using System.Text;
+using System.IO;
 using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Media;
+
 
 namespace AppLauncher.Models
 {
@@ -28,10 +26,12 @@ namespace AppLauncher.Models
            RegistryKey rk = Registry.CurrentUser.OpenSubKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", true);
            if (rk.GetValue("AppLauncher") != null)
                rk.DeleteValue("AppLauncher");
+           File.Delete("InstalledSoftware.bin");
+           
        }
 
 
-       private static List<DirSearchItem> FillList()
+      public static List<DirSearchItem> GetInitialLocations()
        {
            List<DirSearchItem> locations = new List<DirSearchItem>();
            // locations.Add(new DirSearchItem { Path = "C://Windows", Levels = 1 });          
@@ -44,152 +44,48 @@ namespace AppLauncher.Models
            locations.Add(new DirSearchItem { Path = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), Levels = 1000 });
            locations.Add(new DirSearchItem { Path = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86), Levels = 1000 });
            locations.Add(new DirSearchItem { Path = "C://Program Files", Levels = 1000 });
+           locations.Add(new DirSearchItem { Path = "C://Users", Levels = 1000 });
            //locations.Add(new DirSearchItem { Path = Environment.GetFolderPath(Environment.SpecialFolder.Startup), Levels = 1000 });
            return locations;
        }
 
-       public static async Task<List<Executable>> GetInstalledSoftware()
+      /*
+              * Look at registry to find areas that might hold user executables 
+              * Add locations to search
+              */
+      //public static async Task<List<DirSearchItem>> SearchRegistry()
+      //{
+      //    List<DirSearchItem> locations = new List<DirSearchItem>();
+      //    int index;         
+      //    RegistryKey key = key = Registry.CurrentUser.OpenSubKey(@"Software\Microsoft\Windows\CurrentVersion\Uninstall");
+      //    string[] users = Registry.CurrentUser.GetSubKeyNames();
+      //    if (key != null)
+      //        foreach (string skName in key.GetSubKeyNames())
+      //        {
+      //            using (RegistryKey sk = key.OpenSubKey(skName))
+      //            {
+      //                try
+      //                {
+      //                    index = locations.FindIndex(f => f.Path.Equals((string)sk.GetValue("InstallLocation")));
+      //                    if (index < 0)
+      //                        locations.Add(new DirSearchItem { Path = (string)sk.GetValue("InstallLocation"), Levels = 1000 });
+      //                }
+      //                catch (Exception) { }
+      //            }
+      //        }
+      //    return locations;
+      //}
+
+
+       public static async Task<List<Executable>> GetInstalledSoftware(List<DirSearchItem> locations)
        {
-           List<DirSearchItem> locations = FillList();
+          // var RegistryList = await SearchRegistry();
+           //if (RegistryList != null && RegistryList.Count > 0)
+           //    for (int i = 0; i < RegistryList.Count; i++)
+           //        locations.Add(RegistryList[i]);
+           
            int index;
-           List<Executable> software = new List<Executable>();
-           #region comments
-           //gets some executables
-           //string SoftwareKey = @"SOFTWARE\Wow6432Node\Microsoft\Windows\CurrentVersion\App Paths";
-           //using (RegistryKey rk = Registry.LocalMachine.OpenSubKey(SoftwareKey))
-           //{
-           //    foreach (string skName in rk.GetSubKeyNames())
-           //    {
-           //        using (RegistryKey sk = rk.OpenSubKey(skName))
-           //        {
-           //            try
-           //            {
-           //                if (sk.GetValue("") != null)
-           //                {
-           //                    string name = sk.Name;
-           //                    if (name.Contains(".exe"))
-           //                    {
-           //                        name = name.Substring(83, name.Length - 87);
-           //                    }
-           //                    else
-           //                    {
-           //                        name = name.Substring(83, name.Length - 83);
-           //                    }                               
-           //                    string loc = (string)sk.GetValue("");
-           //                    if (loc.Contains("system32"))
-           //                    {
-           //                        loc = loc.Replace("system32", "sysnative");
-           //                    }
-           //                    if (loc.Contains("Program Files (x86)") && loc.Contains("Microsoft Shared"))
-           //                    {
-           //                        loc = loc.Replace("Program Files (x86)", "Program Files");
-           //                    }
-           //                    try
-           //                    {
-           //                        Icon ico = System.Drawing.Icon.ExtractAssociatedIcon((string)sk.GetValue(""));
-           //                        ImageSource source = System.Windows.Interop.Imaging.CreateBitmapSourceFromHIcon(ico.Handle, System.Windows.Int32Rect.Empty, System.Windows.Media.Imaging.BitmapSizeOptions.FromEmptyOptions());
-           //                        software.Add(new Executable { Name = name + "*", Location = loc, ImgSrc = source });
-           //                    }
-           //                    catch (Exception)
-           //                    {
-           //                        software.Add(new Executable { Name = name + "*", Location = loc });
-           //                    }
-           //                }
-           //            }
-           //            catch (Exception)
-           //            {
-           //            }
-           //        }
-           //    }
-           //}
-
-
-           //gets paths to uninstall locations
-           //SoftwareKey = @"SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall";
-           //using (RegistryKey rk = Registry.LocalMachine.OpenSubKey(SoftwareKey))
-           //{
-           //    foreach (string skName in rk.GetSubKeyNames())
-           //    {
-           //        using (RegistryKey sk = rk.OpenSubKey(skName))
-           //        {
-           //            try
-           //            {
-           //                if (sk.GetValue("SystemComponent") == null || ((int)sk.GetValue("SystemComponent") == 0))
-           //                    // if (sk.GetValue("WindowsInstaller") == null || ((int)sk.GetValue("WindowsInstaller", 0) == 0))
-           //                    //if (sk.GetValue("UninstallString") != null)
-           //                    //if (sk.GetValue("ParentKeyName") == null)
-           //                    if (sk.GetValue("DisplayName") != null)
-           //                    {
-           //                        if (sk.GetValue("InstallLocation") != null && !sk.GetValue("InstallLocation").Equals(""))
-           //                        {
-           //                            index = software.FindIndex(f => f.Name.Equals(sk.GetValue("DisplayName")));
-           //                            if (index < 0)
-           //                            {
-           //                                software.Add(new Executable { Name = (string)sk.GetValue("DisplayName"), Location = (string)sk.GetValue("InstallLocation") });
-           //                            }
-           //                        }
-           //                    }
-           //            }
-           //            catch (Exception)
-           //            {
-           //            }
-           //        }
-           //    }
-           //}
-
-           //SoftwareKey = @"SOFTWARE\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall";
-           //using (RegistryKey rk = Registry.LocalMachine.OpenSubKey(SoftwareKey))
-           //{
-
-           //    foreach (string skName in rk.GetSubKeyNames())
-           //    {
-           //        using (RegistryKey sk = rk.OpenSubKey(skName))
-           //        {
-           //            try
-           //            {
-           //                // if ((sk.GetValue("DisplayName") != null) || ((int)sk.GetValue("SystemComponent",0) != 1) || (int)sk.GetValue("WindowsInstaller", 0) !=1|| sk.GetValue("UninstallString"))
-           //                if (sk.GetValue("SystemComponent") == null || ((int)sk.GetValue("SystemComponent") == 0))
-           //                    //if (sk.GetValue("WindowsInstaller") == null || ((int)sk.GetValue("WindowsInstaller", 0) == 0))
-           //                    //   if (sk.GetValue("UninstallString") != null)
-           //                    //if (sk.GetValue("ParentKeyName") == null)
-           //                    if (sk.GetValue("DisplayName") != null)
-           //                    {
-           //                        if (sk.GetValue("InstallLocation") != null && !sk.GetValue("InstallLocation").Equals(""))
-           //                        {
-           //                            index = software.FindIndex(f => f.Name.Equals(sk.GetValue("DisplayName")));
-           //                            if (index < 0)
-           //                                software.Add(new Executable { Name = (string)sk.GetValue("DisplayName"), Location = (string)sk.GetValue("InstallLocation") });
-
-           //                        }
-           //                    }
-           //            }
-           //            catch (Exception)
-           //            {
-           //            }
-           //        }
-           //    }
-           //} 
-           #endregion
-           /*
-             * Look at registry to find areas that might hold user executables 
-             * Add locations to the search
-             */
-           RegistryKey key = key = Registry.CurrentUser.OpenSubKey(@"Software\Microsoft\Windows\CurrentVersion\Uninstall");
-           string[] users = Registry.CurrentUser.GetSubKeyNames();
-           if (key != null)
-               foreach (string skName in key.GetSubKeyNames())
-               {
-                   using (RegistryKey sk = key.OpenSubKey(skName))
-                   {
-                       try
-                       {
-                           index = locations.FindIndex(f => f.Path.Equals((string)sk.GetValue("InstallLocation")));
-                           if (index < 0)
-                               locations.Add(new DirSearchItem { Path = (string)sk.GetValue("InstallLocation"), Levels = 1000 });
-                       }
-                       catch (Exception) { }
-                   }
-               }
+           List<Executable> software = new List<Executable>();                  
            List<System.IO.FileInfo> tmp = new List<System.IO.FileInfo>();
            foreach (DirSearchItem d in locations)
            {
