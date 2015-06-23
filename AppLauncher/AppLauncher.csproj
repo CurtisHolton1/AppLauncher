@@ -94,8 +94,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Models\DirSearchItem.cs" />
-    <Compile Include="Models\Startup.cs" />
-    <Compile Include="Models\WatcherWrapper.cs" />
+    <Compile Include="Services\Startup.cs" />
+    <Compile Include="Services\WatcherWrapper.cs" />
     <Compile Include="Properties\AssemblyInfo.cs">
       <SubType>Code</SubType>
     </Compile>

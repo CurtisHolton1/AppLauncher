@@ -34,10 +34,8 @@ namespace AppLauncher.Models
       public static List<DirSearchItem> GetInitialLocations()
        {
            List<DirSearchItem> locations = new List<DirSearchItem>();
-           // locations.Add(new DirSearchItem { Path = "C://Windows", Levels = 1 });          
-           //locations.Add(new DirSearchItem { Path = "C://Program Files (x86)", Levels = 1000 });
-           // locations.Add(new DirSearchItem { Path = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), Levels = 100000 });
-           locations.Add(new DirSearchItem { Path = Environment.GetFolderPath(Environment.SpecialFolder.Windows), Levels = 1 });
+
+           locations.Add(new DirSearchItem { Path = Environment.GetFolderPath(Environment.SpecialFolder.Windows), Levels = 1000 });
            locations.Add(new DirSearchItem { Path = Environment.GetFolderPath(Environment.SpecialFolder.StartMenu), Levels = 1000 });
            locations.Add(new DirSearchItem { Path = Environment.GetFolderPath(Environment.SpecialFolder.CommonStartMenu), Levels = 1000 });
            locations.Add(new DirSearchItem { Path = Environment.GetFolderPath(Environment.SpecialFolder.Desktop), Levels = 1000 });
@@ -45,7 +43,7 @@ namespace AppLauncher.Models
            locations.Add(new DirSearchItem { Path = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86), Levels = 1000 });
            locations.Add(new DirSearchItem { Path = "C://Program Files", Levels = 1000 });
            locations.Add(new DirSearchItem { Path = "C://Users", Levels = 1000 });
-           //locations.Add(new DirSearchItem { Path = Environment.GetFolderPath(Environment.SpecialFolder.Startup), Levels = 1000 });
+
            return locations;
        }
 
@@ -94,17 +92,17 @@ namespace AppLauncher.Models
                    foreach (System.IO.FileInfo fileInfo in tmp)
                    {
                        //  if (DateTime.UtcNow.Year == fileInfo.LastAccessTimeUtc.Year && DateTime.UtcNow.Month - fileInfo.LastAccessTimeUtc.Month <= 2)  
-                       index = software.FindIndex(f => f.Name.Equals(fileInfo.Name));
+                       index = software.FindIndex(f => f.Name.Equals(char.ToUpper(fileInfo.Name[0]) + fileInfo.Name.Substring(1)));
                        if (index < 0)
                            try
-                           {
+                           {                                                         
                               // Icon ico = System.Drawing.Icon.ExtractAssociatedIcon(fileInfo.ToString());
                               // ImageSource source = System.Windows.Interop.Imaging.CreateBitmapSourceFromHIcon(ico.Handle, System.Windows.Int32Rect.Empty, System.Windows.Media.Imaging.BitmapSizeOptions.FromEmptyOptions());
-                               software.Add(new Executable { Name = fileInfo.Name, Location = fileInfo.FullName, LastUsed = fileInfo.LastAccessTime });
+                               software.Add(new Executable { Name = char.ToUpper(fileInfo.Name[0]) + fileInfo.Name.Substring(1) , Location = fileInfo.FullName, LastUsed = fileInfo.LastAccessTime });
                            }
                            catch (Exception)
                            {
-                               software.Add(new Executable { Name = fileInfo.Name, Location = fileInfo.FullName, LastUsed = fileInfo.LastAccessTime });
+                               software.Add(new Executable { Name = char.ToUpper(fileInfo.Name[0]) + fileInfo.Name.Substring(1), Location = fileInfo.FullName, LastUsed = fileInfo.LastAccessTime });
                            }
                    }
            }
@@ -126,20 +124,24 @@ namespace AppLauncher.Models
            while (dirs.Count > 0)
            {
                string currentDir = dirs.Pop();
+               string[] a = currentDir.Split('\\');
+
+               if(a.Length >=3 && a[2].Equals("Downloads")){
+                   currentDir = dirs.Pop();//skip downloads folder
+               }
                string[] subDirs;
                try
                {
                    subDirs = System.IO.Directory.GetDirectories(currentDir);
-
                    string[] files = null;
-
                    files = System.IO.Directory.GetFiles(currentDir);
                    foreach (string file in files)
                    {
                        try
                        {
                            System.IO.FileInfo fi = new System.IO.FileInfo(file);
-                           if (fi.Extension.Equals(".exe") || fi.Extension.Equals(".lnk"))
+                           
+                           if (fi.Extension.Equals(".exe"))
                            {
                                retList.Add(fi);
                            }

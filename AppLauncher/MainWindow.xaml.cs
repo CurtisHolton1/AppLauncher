@@ -32,18 +32,15 @@ namespace AppLauncher
         List<Executable> software = new List<Executable>();
        
         public MainWindow()
-        {
+        {       
             InitializeComponent();
             HotKey _hotKey = new HotKey(Key.Z, KeyModifier.Shift | KeyModifier.Win, OnHotKeyHandler);
             TextBar1.Focus();
             //Startup.RemoveStartup();
-            if ( Startup.SetStartup())
+            if (Startup.SetStartup())
                 WriteFile(Startup.GetInitialLocations());
-            FileDeserialization();
-            
+            FileDeserialization();           
         }
-
-
         public async void WriteFile(List<DirSearchItem> locations)
         {
             software = await Startup.GetInstalledSoftware(locations);
@@ -74,9 +71,7 @@ namespace AppLauncher
             }
         }
 
-        
-
-
+       
 
         #region OperatingModes
         private async Task<List<DropDownItem>> AppSearch(string text)
@@ -88,7 +83,14 @@ namespace AppLauncher
                 {
                     if (e.Name.ToLower().StartsWith(text.ToLower()) || (e.Name.ToLower().Contains(text.ToLower()) && text.Length >= 3))
                     {
-                        searchList.Add(new DropDownItem { Content = e.Name.Substring(0, e.Name.Length - 4), Path = e.Location, ImgSrc = e.ImgSrc, LastUsed = e.LastUsed, Option = e.LastUsed.ToShortDateString() });
+                        string set = e.Location;
+                        if (e.Location.Length >= 40)
+                        {
+                            set = e.Location.Substring(0, 40) + "...";
+                        }
+                        ContentColumn.Width = 200;
+                        OptionColumn.Width = 350;
+                        searchList.Add(new DropDownItem { Content = e.Name.Substring(0, e.Name.Length - 4), Path = e.Location, ImgSrc = e.ImgSrc, LastUsed = e.LastUsed, Option = set});
                     }
                 }
             }
@@ -98,6 +100,7 @@ namespace AppLauncher
             searchList.Sort();
             return searchList;
         }
+
         private async Task<string> Calculator(string text)
         {
             
@@ -121,6 +124,7 @@ namespace AppLauncher
                         setString = exp.Evaluate().ToString();
                         if (flag)
                         {
+                           
                             TextBar1.Text = setString;
                             //sets cursor
                             TextBar1.Select(TextBar1.Text.Length, 0);
@@ -140,12 +144,14 @@ namespace AppLauncher
             List<DropDownItem> searchList = new List<DropDownItem>();
             if (TextBar1.Text != string.Empty)
             {
+                ContentColumn.Width = 300;
+                OptionColumn.Width = 250;
                 Uri imageUri = new Uri(@"Content\goog.ico", UriKind.Relative);
                 BitmapImage imageBitmap = new BitmapImage(imageUri);
                 searchList.Add(new DropDownItem { Content = text, Path = "https://www.google.com/#q=", ImgSrc = imageBitmap });
                 imageUri = new Uri(@"Content\stack.png", UriKind.Relative);
                 imageBitmap = new BitmapImage(imageUri);
-                searchList.Add(new DropDownItem { Content = text, Path = "http://stackoverflow.com/search?q=", Option = "Stack Overflow", ImgSrc = imageBitmap });
+                searchList.Add(new DropDownItem { Content = text, Path = "http://stackoverflow.com/search?q=", Option = "Stack Overflow", ImgSrc = imageBitmap});
                 imageUri = new Uri(@"Content\youtube.png", UriKind.Relative);
                 imageBitmap = new BitmapImage(imageUri);
                 searchList.Add(new DropDownItem { Content = text, Path = "https://www.youtube.com/results?search_query=", ImgSrc = imageBitmap });
@@ -181,6 +187,8 @@ namespace AppLauncher
                 text = await Calculator(text);
                 if (mode == "calc")
                 {
+                    ContentColumn.Width = 300;
+                    OptionColumn.Width = 250;
                     Uri imageUri = new Uri(@"Content\calc.ico", UriKind.Relative);
                     BitmapImage imageBitmap = new BitmapImage(imageUri);
                     DropDownItem item = new DropDownItem { Content = text, Option = "Copy with enter", ImgSrc = imageBitmap };
@@ -224,6 +232,7 @@ namespace AppLauncher
                 ListView1.SelectedItem = ListView1.Items[0];
             }
         }
+
         private void Window_Deactivated(object sender, EventArgs e)
         {
             //this.Close();
@@ -262,10 +271,17 @@ namespace AppLauncher
             }
             else if (e.Key == Key.Return && !ListView1.Items.IsEmpty && mode == "app")
             {
-                DropDownItem item = new DropDownItem();
-                item = (DropDownItem)ListView1.SelectedItem;
-                Process.Start(item.Path);
-                TextBar1.Clear();
+                try
+                {
+                    DropDownItem item = new DropDownItem();
+                    item = (DropDownItem)ListView1.SelectedItem;
+                    Process.Start(item.Path);
+                    TextBar1.Clear();
+                }
+                catch (Exception ex)
+                {
+
+                }
             }
             else if (e.Key == Key.Up && ListView1.SelectedItem == ListView1.Items[0])
             {
@@ -291,7 +307,6 @@ namespace AppLauncher
             TextBar1.Clear();
         }
 
-
         private void SettingsButton_Click(object sender, RoutedEventArgs e)
         {
             Window settingsWin = new SettingsWindow();
@@ -310,11 +325,6 @@ namespace AppLauncher
             this.Activate();
         }
         #endregion
-
-       
-
-        
-
-      
+    
     }
 }
