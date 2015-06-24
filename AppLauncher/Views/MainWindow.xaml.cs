@@ -16,6 +16,7 @@ using System.Drawing;
 using AppLauncher.Models;
 using System.IO;
 using ProtoBuf;
+using AppLauncher.Services;
 
 
 namespace AppLauncher
@@ -33,7 +34,13 @@ namespace AppLauncher
        
         public MainWindow()
         {       
+            
             InitializeComponent();
+            WindowWatcher.AddWindow(this);
+            VersionCheck.CompareCurrent();
+           
+
+
             HotKey _hotKey = new HotKey(Key.Z, KeyModifier.Shift | KeyModifier.Win, OnHotKeyHandler);
             TextBar1.Focus();
             //Startup.RemoveStartup();
@@ -146,13 +153,13 @@ namespace AppLauncher
             {
                 ContentColumn.Width = 300;
                 OptionColumn.Width = 250;
-                Uri imageUri = new Uri(@"Content\goog.ico", UriKind.Relative);
+                Uri imageUri = new Uri(@"..\Content\goog.ico", UriKind.Relative);
                 BitmapImage imageBitmap = new BitmapImage(imageUri);
                 searchList.Add(new DropDownItem { Content = text, Path = "https://www.google.com/#q=", ImgSrc = imageBitmap });
-                imageUri = new Uri(@"Content\stack.png", UriKind.Relative);
+                imageUri = new Uri(@"..\Content\stack.png", UriKind.Relative);
                 imageBitmap = new BitmapImage(imageUri);
                 searchList.Add(new DropDownItem { Content = text, Path = "http://stackoverflow.com/search?q=", Option = "Stack Overflow", ImgSrc = imageBitmap});
-                imageUri = new Uri(@"Content\youtube.png", UriKind.Relative);
+                imageUri = new Uri(@"..\Content\youtube.png", UriKind.Relative);
                 imageBitmap = new BitmapImage(imageUri);
                 searchList.Add(new DropDownItem { Content = text, Path = "https://www.youtube.com/results?search_query=", ImgSrc = imageBitmap });
             }
@@ -189,7 +196,7 @@ namespace AppLauncher
                 {
                     ContentColumn.Width = 300;
                     OptionColumn.Width = 250;
-                    Uri imageUri = new Uri(@"Content\calc.ico", UriKind.Relative);
+                    Uri imageUri = new Uri(@"..\Content\calc.ico", UriKind.Relative);
                     BitmapImage imageBitmap = new BitmapImage(imageUri);
                     DropDownItem item = new DropDownItem { Content = text, Option = "Copy with enter", ImgSrc = imageBitmap };
                     ListView1.Items.Clear();
@@ -235,8 +242,7 @@ namespace AppLauncher
 
         private void Window_Deactivated(object sender, EventArgs e)
         {
-            //this.Close();
-            //this.Visibility = Visibility.Hidden;
+            this.Visibility = Visibility.Hidden;
         }
 
         private void Window_MouseDown(object sender, MouseButtonEventArgs e)
@@ -324,7 +330,14 @@ namespace AppLauncher
             Keyboard.Focus(TextBar1);
             this.Activate();
         }
+
+        private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+        {
+            WindowWatcher.RemoveWindow(this);
+        }
         #endregion
+
+      
     
     }
 }

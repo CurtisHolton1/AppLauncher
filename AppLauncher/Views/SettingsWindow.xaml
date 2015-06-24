@@ -1,7 +1,7 @@
 ﻿<Window x:Class="AppLauncher.SettingsWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="Settings" Height="300" Width="300" WindowStyle="ToolWindow">
+        Title="Settings" Height="300" Width="300" WindowStyle="ToolWindow" Closing="Window_Closing">
     <Grid>
         
     </Grid>

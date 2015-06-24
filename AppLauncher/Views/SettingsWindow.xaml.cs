@@ -22,6 +22,12 @@ namespace AppLauncher
         public SettingsWindow()
         {
             InitializeComponent();
+            WindowWatcher.AddWindow(this);
+        }
+
+        private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+        {
+            WindowWatcher.RemoveWindow(this);
         }
     }
 }
