@@ -17,6 +17,7 @@ using AppLauncher.Models;
 using System.IO;
 using ProtoBuf;
 using AppLauncher.Services;
+using Curt.shared;
 
 
 namespace AppLauncher
@@ -33,50 +34,27 @@ namespace AppLauncher
         List<Executable> software = new List<Executable>();
        
         public MainWindow()
-        {       
-            
-            InitializeComponent();
-            WindowWatcher.AddWindow(this);
-            VersionCheck.CompareCurrent();
-           
-
-
-            HotKey _hotKey = new HotKey(Key.Z, KeyModifier.Shift | KeyModifier.Win, OnHotKeyHandler);
-            TextBar1.Focus();
-            //Startup.RemoveStartup();
-            if (Startup.SetStartup())
-                WriteFile(Startup.GetInitialLocations());
-            FileDeserialization();           
-        }
-        public async void WriteFile(List<DirSearchItem> locations)
         {
-            software = await Startup.GetInstalledSoftware(locations);
-            using (var file = File.OpenWrite("InstalledSoftware.bin"))
+            try
             {
-                file.Position = file.Length;
-                Serializer.Serialize<List<Executable>>(file, software);      
-            }          
-        }
+                InitializeComponent();
+                WindowWatcher.AddWindow(this);
+                VersionCheck.CompareCurrent();
+                HotKey _hotKey = new HotKey(Key.Z, KeyModifier.Shift | KeyModifier.Win, OnHotKeyHandler);
+                TextBar1.Focus();
+                //Startup.RemoveStartup();
+                Startup.SetStartup();
+                    //WriteFile(Startup.GetInitialLocations());
+                FileWriteRead fileObject = new FileWriteRead();
+               software = fileObject.FileDeserialization();
 
-        private async void FileDeserialization()
-        {
-            using (var file = File.OpenRead("InstalledSoftware.bin"))
-            {
-                file.Position = 0;
-                software = Serializer.Deserialize<List<Executable>>(file);
             }
-            //get icons
-            foreach (Executable e in software)
+            catch (Exception e)
             {
-                try
-                {
-                    Icon ico = System.Drawing.Icon.ExtractAssociatedIcon(e.Location.ToString());
-                    e.ImgSrc = System.Windows.Interop.Imaging.CreateBitmapSourceFromHIcon(ico.Handle, System.Windows.Int32Rect.Empty, System.Windows.Media.Imaging.BitmapSizeOptions.FromEmptyOptions());
-                    e.ImgSrc.Freeze();
-                }
-                catch (Exception) { }
+                MessageBox.Show(e.Message);
             }
         }
+        
 
        
 
@@ -137,7 +115,9 @@ namespace AppLauncher
                             TextBar1.Select(TextBar1.Text.Length, 0);
                         }
                     }
-                    catch { }
+                    catch (Exception ex) {
+                        MessageBox.Show(ex.Message);
+                    }
                 }           
                 else
                     setString = "Please use a valid expression";
@@ -153,13 +133,13 @@ namespace AppLauncher
             {
                 ContentColumn.Width = 300;
                 OptionColumn.Width = 250;
-                Uri imageUri = new Uri(@"..\Content\goog.ico", UriKind.Relative);
+                Uri imageUri = new Uri(@"Content\goog.ico", UriKind.Relative);
                 BitmapImage imageBitmap = new BitmapImage(imageUri);
                 searchList.Add(new DropDownItem { Content = text, Path = "https://www.google.com/#q=", ImgSrc = imageBitmap });
-                imageUri = new Uri(@"..\Content\stack.png", UriKind.Relative);
+                imageUri = new Uri(@"Content\stack.png", UriKind.Relative);
                 imageBitmap = new BitmapImage(imageUri);
                 searchList.Add(new DropDownItem { Content = text, Path = "http://stackoverflow.com/search?q=", Option = "Stack Overflow", ImgSrc = imageBitmap});
-                imageUri = new Uri(@"..\Content\youtube.png", UriKind.Relative);
+                imageUri = new Uri(@"Content\youtube.png", UriKind.Relative);
                 imageBitmap = new BitmapImage(imageUri);
                 searchList.Add(new DropDownItem { Content = text, Path = "https://www.youtube.com/results?search_query=", ImgSrc = imageBitmap });
             }

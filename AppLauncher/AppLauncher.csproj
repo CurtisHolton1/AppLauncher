@@ -72,6 +72,7 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="Services\FileWriteRead.cs" />
     <Compile Include="Services\VersionCheck.cs" />
     <Compile Include="Services\WindowWatcher.cs" />
     <Compile Include="Views\SettingsWindow.xaml.cs">
@@ -85,7 +86,6 @@
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Models\Executable.cs" />
     <Compile Include="Models\DropDownItem.cs" />
     <Compile Include="Services\HotKey.cs" />
     <Compile Include="Views\MainWindow.xaml.cs">
@@ -98,8 +98,6 @@
     </Page>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Models\DirSearchItem.cs" />
-    <Compile Include="Services\Startup.cs" />
     <Compile Include="Services\WatcherWrapper.cs" />
     <Compile Include="Properties\AssemblyInfo.cs">
       <SubType>Code</SubType>
@@ -139,6 +137,12 @@
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Content\stack.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\..\..\..\..\code\Curt.shared\Curt.shared\Curt.shared.csproj">
+      <Project>{173be736-1bca-4c07-9e2d-18f56602d7c7}</Project>
+      <Name>Curt.shared</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

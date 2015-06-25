@@ -14,7 +14,7 @@ namespace AppLauncher.Services
 {
    public class VersionCheck
     {
-
+       
        static WebClient client;
        public static void CompareCurrent(){
            try
