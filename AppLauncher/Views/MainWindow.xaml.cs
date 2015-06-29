@@ -18,13 +18,14 @@ using System.IO;
 using ProtoBuf;
 using AppLauncher.Services;
 using Curt.shared;
-
+using System.Timers;
 
 namespace AppLauncher
 {
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
+    /// 
     public partial class MainWindow : Window
     {
         delegate void updateCallback();
@@ -32,31 +33,50 @@ namespace AppLauncher
         string mode = "app";
         [ProtoMember(1)]
         List<Executable> software = new List<Executable>();
-       
+        DispatcherTimer timer = new DispatcherTimer();
+
         public MainWindow()
+        {
+
+            InitializeComponent();
+            WindowWatcher.AddWindow(this);
+            HotKey _hotKey = new HotKey(Key.Z, KeyModifier.Shift | KeyModifier.Win, OnHotKeyHandler);
+            TextBar1.Focus();
+            //Startup.RemoveStartup();
+            Startup.SetStartup();
+            //WriteFile(Startup.GetInitialLocations());
+            FileWriteRead fileObject = new FileWriteRead();
+            software = fileObject.FileDeserialization();
+            timer.Interval = TimeSpan.FromSeconds(10);
+            timer.Tick += timer_Tick;
+            timer.Start();
+        }
+
+
+
+        private async void timer_Tick(object sender, EventArgs e)
+        {
+           // if (!VersionCheck.windowOpen)
+             //   await CheckVersion();
+        }
+
+        private async Task<string> CheckVersion()
         {
             try
             {
-                InitializeComponent();
-                WindowWatcher.AddWindow(this);
-                VersionCheck.CompareCurrent();
-                HotKey _hotKey = new HotKey(Key.Z, KeyModifier.Shift | KeyModifier.Win, OnHotKeyHandler);
-                TextBar1.Focus();
-                //Startup.RemoveStartup();
-                Startup.SetStartup();
-                    //WriteFile(Startup.GetInitialLocations());
-                FileWriteRead fileObject = new FileWriteRead();
-               software = fileObject.FileDeserialization();
-
+                var available = await Task.Run(() => VersionCheck.CompareCurrent());
+                if (available)
+                {
+                    VersionCheck.AskForUpdate();
+                }
             }
             catch (Exception e)
             {
-                MessageBox.Show(e.Message);
+                Console.WriteLine("fdsa");
             }
+            return "";
         }
-        
 
-       
 
         #region OperatingModes
         private async Task<List<DropDownItem>> AppSearch(string text)
@@ -75,7 +95,7 @@ namespace AppLauncher
                         }
                         ContentColumn.Width = 200;
                         OptionColumn.Width = 350;
-                        searchList.Add(new DropDownItem { Content = e.Name.Substring(0, e.Name.Length - 4), Path = e.Location, ImgSrc = e.ImgSrc, LastUsed = e.LastUsed, Option = set});
+                        searchList.Add(new DropDownItem { Content = e.Name.Substring(0, e.Name.Length - 4), Path = e.Location, ImgSrc = e.ImgSrc, LastUsed = e.LastUsed, Option = set });
                     }
                 }
             }
@@ -88,7 +108,7 @@ namespace AppLauncher
 
         private async Task<string> Calculator(string text)
         {
-            
+
             NCalc.Expression exp;
             string setString = text;
             bool flag = false;
@@ -98,7 +118,7 @@ namespace AppLauncher
                 mode = "calc";
                 if (text.Substring(text.Length - 1, 1).Equals("="))
                 {
-                    text = text.Substring(0, text.Length-1);
+                    text = text.Substring(0, text.Length - 1);
                     flag = true;
                 }
                 exp = new NCalc.Expression(text, EvaluateOptions.IgnoreCase);
@@ -109,16 +129,17 @@ namespace AppLauncher
                         setString = exp.Evaluate().ToString();
                         if (flag)
                         {
-                           
+
                             TextBar1.Text = setString;
                             //sets cursor
                             TextBar1.Select(TextBar1.Text.Length, 0);
                         }
                     }
-                    catch (Exception ex) {
-                        MessageBox.Show(ex.Message);
+                    catch (Exception ex)
+                    {
+
                     }
-                }           
+                }
                 else
                     setString = "Please use a valid expression";
             }
@@ -138,7 +159,7 @@ namespace AppLauncher
                 searchList.Add(new DropDownItem { Content = text, Path = "https://www.google.com/#q=", ImgSrc = imageBitmap });
                 imageUri = new Uri(@"Content\stack.png", UriKind.Relative);
                 imageBitmap = new BitmapImage(imageUri);
-                searchList.Add(new DropDownItem { Content = text, Path = "http://stackoverflow.com/search?q=", Option = "Stack Overflow", ImgSrc = imageBitmap});
+                searchList.Add(new DropDownItem { Content = text, Path = "http://stackoverflow.com/search?q=", Option = "Stack Overflow", ImgSrc = imageBitmap });
                 imageUri = new Uri(@"Content\youtube.png", UriKind.Relative);
                 imageBitmap = new BitmapImage(imageUri);
                 searchList.Add(new DropDownItem { Content = text, Path = "https://www.youtube.com/results?search_query=", ImgSrc = imageBitmap });
@@ -151,6 +172,7 @@ namespace AppLauncher
         #region UI
         private async void TextBar1_TextChanged(object sender, TextChangedEventArgs e)
         {
+
             String text = TextBar1.Text;
             if (string.IsNullOrEmpty(text))
             {
@@ -315,9 +337,16 @@ namespace AppLauncher
         {
             WindowWatcher.RemoveWindow(this);
         }
+
+        private void Window_Activated(object sender, EventArgs e)
+        {
+
+        }
         #endregion
 
-      
-    
+       
+
+
     }
 }
+
