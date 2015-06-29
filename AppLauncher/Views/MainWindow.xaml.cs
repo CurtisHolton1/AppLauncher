@@ -37,7 +37,7 @@ namespace AppLauncher
 
         public MainWindow()
         {
-
+            //check in comment
             InitializeComponent();
             WindowWatcher.AddWindow(this);
             HotKey _hotKey = new HotKey(Key.Z, KeyModifier.Shift | KeyModifier.Win, OnHotKeyHandler);
