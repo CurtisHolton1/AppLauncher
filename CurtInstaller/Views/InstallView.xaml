@@ -1,0 +1,10 @@
+﻿<Window x:Class="CurtInstaller.InstallView"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Install" Height="350" Width="525" ContentRendered="Window_ContentRendered" >  
+    <Grid HorizontalAlignment="Center">
+        <TextBlock  Text="Please wait while the application is installed" Margin="0,50,0,0"></TextBlock>
+        
+        <!--<ProgressBar x:Name="InstallBar" Height="20" Width="160" Value="{Binding InstallValue, UpdateSourceTrigger=PropertyChanged}" ></ProgressBar>-->
+    </Grid>
+</Window>
