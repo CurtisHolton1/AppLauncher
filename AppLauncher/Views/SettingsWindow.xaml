@@ -3,6 +3,10 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="Settings" Height="300" Width="300" WindowStyle="ToolWindow" Closing="Window_Closing">
     <Grid>
-        
+        <Grid>
+        <TextBlock Text="Enable Auto updates"></TextBlock>
+        <CheckBox Margin="120,2,0,0" Checked="CheckBox_Checked" Unchecked="CheckBox_Unchecked" VerticalAlignment="Top" HorizontalAlignment="Left" IsChecked="{Binding CheckBoxChecked, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"></CheckBox>
+        <Button Content="Check for updates" Margin="140,0,0,0" HorizontalAlignment="Left" VerticalAlignment="Top" Click="Button_Click"></Button>
+        </Grid>
     </Grid>
 </Window>

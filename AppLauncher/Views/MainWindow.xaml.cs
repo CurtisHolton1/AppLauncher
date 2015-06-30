@@ -19,6 +19,8 @@ using ProtoBuf;
 using AppLauncher.Services;
 using Curt.shared;
 using System.Timers;
+using System.Configuration;
+using Curt.Helpers;
 
 namespace AppLauncher
 {
@@ -34,9 +36,12 @@ namespace AppLauncher
         [ProtoMember(1)]
         List<Executable> software = new List<Executable>();
         DispatcherTimer timer = new DispatcherTimer();
-
+        bool timerFlag;
+        bool updateFlag;
+        int tickCount;
         public MainWindow()
         {
+
             //check in comment
             InitializeComponent();
             WindowWatcher.AddWindow(this);
@@ -45,19 +50,29 @@ namespace AppLauncher
             //Startup.RemoveStartup();
             Startup.SetStartup();
             //WriteFile(Startup.GetInitialLocations());
+            
             FileWriteRead fileObject = new FileWriteRead();
             software = fileObject.FileDeserialization();
-            timer.Interval = TimeSpan.FromSeconds(10);
+            updateFlag = true ;
+            timerFlag = false;
+            timer.Interval = TimeSpan.FromMinutes(1);
             timer.Tick += timer_Tick;
             timer.Start();
         }
 
-
-
-        private async void timer_Tick(object sender, EventArgs e)
+        private void timer_Tick(object sender, EventArgs e)
         {
-           // if (!VersionCheck.windowOpen)
-             //   await CheckVersion();
+            if (Convert.ToBoolean(ConfigurationManager.AppSettings["AutoUpdatesEnabled"]))
+            {
+                tickCount++;
+                if (updateFlag)
+                    timerFlag = true;
+                else if (tickCount >= 288)//24 hours
+                {
+                    tickCount = 0;
+                    updateFlag = true;
+                }
+            }
         }
 
         private async Task<string> CheckVersion()
@@ -67,12 +82,12 @@ namespace AppLauncher
                 var available = await Task.Run(() => VersionCheck.CompareCurrent());
                 if (available)
                 {
-                    VersionCheck.AskForUpdate();
+                    updateFlag = VersionCheck.AskForUpdate();
                 }
             }
             catch (Exception e)
             {
-                Console.WriteLine("fdsa");
+               
             }
             return "";
         }
@@ -319,7 +334,7 @@ namespace AppLauncher
         {
             Window settingsWin = new SettingsWindow();
             settingsWin.Show();
-            this.Close();
+            this.Visibility = Visibility.Hidden;
         }
 
         private void OnHotKeyHandler(HotKey hotKey)
@@ -338,9 +353,13 @@ namespace AppLauncher
             WindowWatcher.RemoveWindow(this);
         }
 
-        private void Window_Activated(object sender, EventArgs e)
+        private async void Window_Activated(object sender, EventArgs e)
         {
-
+            if (timerFlag && !VersionCheck.windowOpen)
+            {
+                timerFlag = false;
+                await CheckVersion();
+            }
         }
         #endregion
 
