@@ -160,9 +160,13 @@
     <Resource Include="Content\stack.png" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\..\..\..\..\code\Curt.shared\Curt.shared\Curt.shared.csproj">
+    <ProjectReference Include="..\Curt.shared\Curt.shared.csproj">
       <Project>{173be736-1bca-4c07-9e2d-18f56602d7c7}</Project>
       <Name>Curt.shared</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\CurtInstaller\CurtInstaller.csproj">
+      <Project>{b59d0b36-2ba5-4302-b699-c54844841dbc}</Project>
+      <Name>CurtInstaller</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

@@ -33,8 +33,11 @@ namespace CurtInstaller.ViewModels
                 {
                     model.Location = System.IO.Path.GetDirectoryName(System.Windows.Forms.Application.ExecutablePath);
                     model.Location = System.IO.Directory.GetParent(model.Location).FullName;
+                    model.Location = System.IO.Directory.GetParent(model.Location).FullName;
+                   // model.Location = @"C:\Users\Curtis\Desktop\blah";
+
                 }
-                var success = model.Download();
+                var success = model.Download(StartupMode);
                 //////////////////////////////////////
                // success = false;
                 ///////////////////////////////////////

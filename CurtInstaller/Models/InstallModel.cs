@@ -36,7 +36,7 @@ namespace CurtInstaller.Models
            }
        }
 
-       public bool Download()
+       public bool Download(string startupMode)
        {
            
            try
@@ -44,7 +44,11 @@ namespace CurtInstaller.Models
            //    client.DownloadProgressChanged += new DownloadProgressChangedEventHandler(ProgressChanged);
            //    client.DownloadFileCompleted += new AsyncCompletedEventHandler(Completed);
            //    client.DownloadFileAsync(new Uri("http://squints.io/Curt/AppLauncher.zip"), Location+"\\AppLauncher.zip");
+               CloseLauncher();
                client.DownloadFile(new Uri("http://squints.io/Curt/AppLauncher.zip"), Location + "\\AppLauncher.zip");
+               if (!string.IsNullOrEmpty(startupMode) && startupMode.Equals("Update"))
+                   return Update();
+               else
              return  InstallFiles();
            }
            catch (Exception e)
@@ -72,33 +76,64 @@ namespace CurtInstaller.Models
        {          
            try
            {
-               CloseLauncher();
+               
 
-              var zip = ZipFile.OpenRead(Location + "\\AppLauncher.zip");
-              var entries = zip.Entries;
-              foreach (var e in entries)
-              {
-                  filesInZip.Add(e.FullName);
-              }
-              if (!System.IO.Directory.Exists(Location + "\\tmp"))
-              {
-                  System.IO.Directory.CreateDirectory(Location + "\\tmp\\CurtInstaller");
-              }
-              foreach (var f in filesInZip)
-              {                  
-                  if (File.Exists(Location +"\\" +f))
-                      File.Move(Location + "\\" + f, Location + "\\tmp\\" + f);
-              }
-              zip.Dispose();
-              var z = ZipFile.OpenRead(Location + "\\AppLauncher.zip");
-              z.ExtractToDirectory(Location);
-              z.Dispose();
-              File.Delete(Location + "\\AppLauncher.zip");
+             
+              //foreach (var e in entries)
+              //{
+              //    filesInZip.Add(e.FullName);
+              //}
+
+              //if (!System.IO.Directory.Exists(Location + "\\tmp"))
+              //{
+              //    System.IO.Directory.CreateDirectory(Location + "\\tmp\\CurtInstaller");
+                  
+              //}
+              //foreach (var f in filesInZip)
+              //{
+              //    if (File.Exists(Location + "\\" + f))
+              //    {
+              //        if (Directory.Exists(Location + "\\tmp\\" + f))
+              //        {
+              //            File.Move(Location + "\\" + f, Location + "\\tmp\\" + f);
+              //        }
+              //        else
+              //        {
+              //            Directory.CreateDirectory(Location + "\\tmp\\" + f);
+              //            File.Move(Location + "\\" + f, Location + "\\tmp\\" + f);
+              //        }
+                          
+              //    }
+              //}
+              //zip.Dispose();
+               var z = ZipFile.OpenRead(Location + "\\AppLauncher.zip");
+               z.ExtractToDirectory(Location);
+               z.Dispose();
+               File.Delete(Location + "\\AppLauncher.zip");
               return true;               
            }
            catch (Exception exc)
            {
-               System.Windows.MessageBox.Show("error in installfiles" + exc.Message);
+               System.Windows.MessageBox.Show("error in Installfiles:" + exc.Message);
+               return false;
+           }
+       }
+
+       private bool Update()
+       {
+           try
+           {
+
+               Directory.Move(Location + "\\AppLauncher", Location + "\\tmp");
+
+               var b = InstallFiles();
+
+               File.Move(Location + "\\tmp\\InstalledSoftware.bin", Location + "\\AppLauncher\\InstalledSoftware.bin");
+               return b;
+           }
+           catch (Exception ex)
+           {
+               System.Windows.MessageBox.Show("Error in Update Method:" + ex.Message);
                return false;
            }
        }
@@ -106,24 +141,23 @@ namespace CurtInstaller.Models
        public void RollBack()
        {
            System.Windows.MessageBox.Show("Something failed, rolling back changes, please wait.");
-           CloseLauncher();
-           for (int i = 0; i < filesInZip.Count; i++)
-           {
-               File.Delete(filesInZip[i]);
-           }
-           var dir = Directory.GetFiles(Location + "\\tmp","*");
-           foreach (var f in dir)
-           {
-               File.Move(Location+"\\tmp\\" + f,f);
-           }
-          
+           //CloseLauncher();
+           //for (int i = 0; i < filesInZip.Count; i++)
+           //{
+           //    File.Delete(filesInZip[i]);
+           //}
+           //var dir = Directory.GetFiles(Location + "\\tmp","*");
+           //foreach (var f in dir)
+           //{
+           //    File.Move(Location+"\\tmp\\" + f,f);
+           //}       
        }
 
        public void StartLauncher()
        {
            Process p = new Process();
-           p.StartInfo.WorkingDirectory = Location;
-           p.StartInfo.FileName = Location + "\\AppLauncher.exe";
+           p.StartInfo.WorkingDirectory = Location +"\\AppLauncher" ;
+           p.StartInfo.FileName = Location + "\\AppLauncher\\AppLauncher.exe";
            p.Start();
        }
 

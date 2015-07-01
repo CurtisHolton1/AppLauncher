@@ -28,8 +28,6 @@ namespace FileSearchTest.Service
 		{
 			try
 			{
-
-
 				//Check to see if the databae exists
 				if (File.Exists(DatabaseName) && OverWrite == false)
 				{
@@ -91,8 +89,6 @@ namespace FileSearchTest.Service
 		{
 			try
 			{
-
-
 				var SqlConnection = new SQLiteConnection("Data Source=" + DatabaseLocation + "; Version=3");
 				SqlConnection.Open();
 				string sql = "SELECT * FROM FilesFound";

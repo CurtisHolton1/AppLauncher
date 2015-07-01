@@ -25,10 +25,9 @@ namespace CurtInstaller.ViewModels
         public RelayCommand BrowseButtonCommand { get; set; }
         void NextButton(object parameter)
         {
-
             if (parameter == null) return;
             if (Directory.Exists(parameter.ToString()))
-            {
+            {             
                 var wnd = new InstallView(null);
                 wnd.Show();
                 CloseWindow();
@@ -39,9 +38,7 @@ namespace CurtInstaller.ViewModels
              var wnd = new InstallView(null);
              wnd.Show();
              CloseWindow();
-            }
-
-            
+            }        
         }
 
         void BrowseButton(object parameter)

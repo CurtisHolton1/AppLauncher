@@ -53,6 +53,9 @@ namespace AppLauncher.Services
                        p.StartInfo.FileName = @"CurtInstaller\CurtInstaller.exe";
                        p.Start();
                        windowOpen = false;
+                       if (!Directory.Exists(AppDomain.CurrentDomain.BaseDirectory + "..\\tmp"))
+                           Directory.CreateDirectory(AppDomain.CurrentDomain.BaseDirectory + "..\\tmp");
+                       Directory.Move(AppDomain.CurrentDomain.BaseDirectory + "\\CurtInstaller", AppDomain.CurrentDomain.BaseDirectory +"..\\tmp");
                        System.Environment.Exit(0);
                        return true;
                    }

@@ -21,7 +21,11 @@ namespace CurtInstaller.Views
     {
         public HiddenView()
         {
+           
             var startupMode = (Application.Current as App).StartupMode;
+            ////////////////////////////
+           // startupMode = "Update";
+            ///////////////////////////
             if (!string.IsNullOrEmpty(startupMode) && startupMode.Equals("Update"))
             {
                 var wnd = new InstallView(startupMode);
