@@ -5,9 +5,16 @@ VisualStudioVersion = 12.0.31101.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AppLauncher", "AppLauncher\AppLauncher.csproj", "{C1CE421E-5499-4A21-ADD8-C61ABD069679}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Curt.shared", "..\..\..\..\..\..\code\Curt.shared\Curt.shared\Curt.shared.csproj", "{173BE736-1BCA-4C07-9E2D-18F56602D7C7}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Curt.shared", "..\..\code\Curt.shared\Curt.shared\Curt.shared.csproj", "{173BE736-1BCA-4C07-9E2D-18F56602D7C7}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CurtInstaller", "..\..\..\..\..\..\code\CurtInstaller\CurtInstaller\CurtInstaller.csproj", "{B59D0B36-2BA5-4302-B699-C54844841DBC}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CurtInstaller", "..\..\code\CurtInstaller\CurtInstaller\CurtInstaller.csproj", "{B59D0B36-2BA5-4302-B699-C54844841DBC}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{6EBB1358-32B2-43EB-B713-9EB4684AC090}"
+	ProjectSection(SolutionItems) = preProject
+		.nuget\NuGet.Config = .nuget\NuGet.Config
+		.nuget\NuGet.exe = .nuget\NuGet.exe
+		.nuget\NuGet.targets = .nuget\NuGet.targets
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
