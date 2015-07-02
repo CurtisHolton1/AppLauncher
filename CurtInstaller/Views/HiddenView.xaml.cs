@@ -24,7 +24,7 @@ namespace CurtInstaller.Views
            
             var startupMode = (Application.Current as App).StartupMode;
             ////////////////////////////
-           // startupMode = "Update";
+            //startupMode = "Update";
             ///////////////////////////
             if (!string.IsNullOrEmpty(startupMode) && startupMode.Equals("Update"))
             {

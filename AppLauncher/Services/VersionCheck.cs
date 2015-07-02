@@ -35,38 +35,45 @@ namespace AppLauncher.Services
 
        public static bool AskForUpdate()
        {
-           string sMessageBoxText = "A new version is available, would you like to update?";
-           string sCaption = "Curt";
-           windowOpen = true;
-           MessageBoxButton btnMessageBox = MessageBoxButton.YesNo;
-           MessageBoxImage icnMessageBox = MessageBoxImage.Warning;
-           MessageBoxResult rsltMessageBox = MessageBox.Show(sMessageBoxText, sCaption, btnMessageBox, icnMessageBox);
-
-           switch (rsltMessageBox)
+           try
            {
-                  
-               case MessageBoxResult.Yes:
-                   {
-                       //Process.Start(@"CurtInstaller\CurtInstaller.exe");
-                       Process p = new Process();
-                       p.StartInfo.Arguments = "Update";
-                       p.StartInfo.FileName = @"CurtInstaller\CurtInstaller.exe";
-                       p.Start();
-                       windowOpen = false;
-                       if (!Directory.Exists(AppDomain.CurrentDomain.BaseDirectory + "..\\tmp"))
-                           Directory.CreateDirectory(AppDomain.CurrentDomain.BaseDirectory + "..\\tmp");
-                       Directory.Move(AppDomain.CurrentDomain.BaseDirectory + "\\CurtInstaller", AppDomain.CurrentDomain.BaseDirectory +"..\\tmp");
-                       System.Environment.Exit(0);
-                       return true;
-                   }
-               case MessageBoxResult.No:
-                   {
-                       windowOpen = false;
-                       return false;
-                   }
-           }
-           return false;
-       }
+               string sMessageBoxText = "A new version is available, would you like to update?";
+               string sCaption = "Curt";
+               windowOpen = true;
+               MessageBoxButton btnMessageBox = MessageBoxButton.YesNo;
+               MessageBoxImage icnMessageBox = MessageBoxImage.Warning;
+               MessageBoxResult rsltMessageBox = MessageBox.Show(sMessageBoxText, sCaption, btnMessageBox, icnMessageBox);
 
+               switch (rsltMessageBox)
+               {
+
+                   case MessageBoxResult.Yes:
+                       {
+                           Process p = new Process();
+                           if (!Directory.Exists(AppDomain.CurrentDomain.BaseDirectory + "..\\..\\tmp"))
+                           {
+                               Directory.CreateDirectory(AppDomain.CurrentDomain.BaseDirectory + "..\\..\\tmp");
+                               p.StartInfo.Arguments = "Update";
+                               p.StartInfo.FileName = AppDomain.CurrentDomain.BaseDirectory + "..\\..\\tmp\\CurtInstaller\\CurtInstaller.exe";
+                               p.Start();
+                               windowOpen = false;
+                               System.Environment.Exit(0);
+                           }
+                           return true;
+                       }
+                   case MessageBoxResult.No:
+                       {
+                           windowOpen = false;
+                           return false;
+                       }
+               }
+               return false;
+           }
+           catch (Exception e)
+           {
+               System.Windows.MessageBox.Show(e.Message);
+               return false;
+           }
+       }
     }
 }

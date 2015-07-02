@@ -17,7 +17,7 @@ namespace Curt.Helpers
         {
             Task<List<Executable>> software = Task.Run(()=>Startup.GetInstalledSoftware(locations));
             var thing = await software;
-            using (var file = File.OpenWrite(locationToWrite + "//AppLauncher//InstalledSoftware.bin"))
+            using (var file = File.OpenWrite(locationToWrite + "//AppLauncher//AppLauncher//InstalledSoftware.bin"))
             {
                 file.Position = file.Length;
                 Serializer.Serialize<List<Executable>>(file, thing);
@@ -47,7 +47,7 @@ namespace Curt.Helpers
                 }
                 catch (Exception ex)
                 {
-                    // MessageBox.Show(ex.Message);
+                     MessageBox.Show(ex.Message);
                 }
 
             }

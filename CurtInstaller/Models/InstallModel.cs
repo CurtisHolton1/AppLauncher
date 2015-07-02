@@ -45,7 +45,7 @@ namespace CurtInstaller.Models
            //    client.DownloadFileCompleted += new AsyncCompletedEventHandler(Completed);
            //    client.DownloadFileAsync(new Uri("http://squints.io/Curt/AppLauncher.zip"), Location+"\\AppLauncher.zip");
                CloseLauncher();
-               client.DownloadFile(new Uri("http://squints.io/Curt/AppLauncher.zip"), Location + "\\AppLauncher.zip");
+               client.DownloadFile(new Uri("http://squints.io/Curt/AppLauncher.zip"), Location + Properties.Settings.Default.zipName);
                if (!string.IsNullOrEmpty(startupMode) && startupMode.Equals("Update"))
                    return Update();
                else
@@ -106,10 +106,10 @@ namespace CurtInstaller.Models
               //    }
               //}
               //zip.Dispose();
-               var z = ZipFile.OpenRead(Location + "\\AppLauncher.zip");
+               var z = ZipFile.OpenRead(Location + Properties.Settings.Default.zipName);
                z.ExtractToDirectory(Location);
                z.Dispose();
-               File.Delete(Location + "\\AppLauncher.zip");
+               File.Delete(Location + Properties.Settings.Default.zipName);
               return true;               
            }
            catch (Exception exc)
@@ -123,12 +123,17 @@ namespace CurtInstaller.Models
        {
            try
            {
-
-               Directory.Move(Location + "\\AppLauncher", Location + "\\tmp");
-
+               if (!Directory.Exists(Location + "\\tmp\\AppLauncher"))
+               {
+                   Directory.CreateDirectory(Location + "\\tmp");
+               }
+               //Directory.Move(Location + "\\AppLauncher\\AppLauncher", Location + "\\tmp\\AppLauncher");     
+               foreach (var f in Directory.GetFiles(Location + "\\AppLauncher\\AppLauncher"))
+               {
+                   File.Move(f, Location + "\\tmp\\AppLauncher" + f);
+               }
                var b = InstallFiles();
-
-               File.Move(Location + "\\tmp\\InstalledSoftware.bin", Location + "\\AppLauncher\\InstalledSoftware.bin");
+               File.Move(Location + "\\tmp\\AppLauncher\\InstalledSoftware.bin", Location + "\\AppLauncher\\AppLauncher\\InstalledSoftware.bin");
                return b;
            }
            catch (Exception ex)
@@ -156,11 +161,10 @@ namespace CurtInstaller.Models
        public void StartLauncher()
        {
            Process p = new Process();
-           p.StartInfo.WorkingDirectory = Location +"\\AppLauncher" ;
-           p.StartInfo.FileName = Location + "\\AppLauncher\\AppLauncher.exe";
+           p.StartInfo.WorkingDirectory = Location + "\\AppLauncher\\AppLauncher";
+           p.StartInfo.FileName = Location + "\\AppLauncher\\AppLauncher\\AppLauncher.exe";
            p.Start();
        }
-
 
        void RaisePropertyChanged(string prop)
        {
