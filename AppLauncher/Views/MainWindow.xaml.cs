@@ -51,7 +51,6 @@ namespace AppLauncher
             TextBar1.Focus();
             //Startup.RemoveStartup();
             Startup.SetStartup();
-            //WriteFile(Startup.GetInitialLocations());
             FileWriteRead fileObject = new FileWriteRead();
             software = fileObject.FileDeserialization();
             updateFlag = true ;
