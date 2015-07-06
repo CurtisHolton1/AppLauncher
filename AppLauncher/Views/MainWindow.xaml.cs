@@ -46,11 +46,12 @@ namespace AppLauncher
             InitializeComponent();
             WindowWatcher.AddWindow(this);
             HotKey _hotKey = new HotKey(Key.Z, KeyModifier.Shift | KeyModifier.Win, OnHotKeyHandler);
+            SharedHelper.KillProcess("CurtInstaller");
+            SharedHelper.DeleteDirectory(AppDomain.CurrentDomain.BaseDirectory + "..\\..\\tmp");
             TextBar1.Focus();
             //Startup.RemoveStartup();
             Startup.SetStartup();
             //WriteFile(Startup.GetInitialLocations());
-            
             FileWriteRead fileObject = new FileWriteRead();
             software = fileObject.FileDeserialization();
             updateFlag = true ;

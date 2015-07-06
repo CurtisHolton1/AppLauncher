@@ -26,15 +26,7 @@ namespace CurtInstaller.Models
           filesInZip = new List<string>();
        }
 
-       public void CloseLauncher()
-       {
-           Process[] processlist = Process.GetProcesses();
-           foreach (Process theprocess in processlist)
-           {
-               if (theprocess.ProcessName.Equals("AppLauncher"))
-                   theprocess.Kill();
-           }
-       }
+     
 
        public bool Download(string startupMode)
        {
@@ -44,7 +36,7 @@ namespace CurtInstaller.Models
            //    client.DownloadProgressChanged += new DownloadProgressChangedEventHandler(ProgressChanged);
            //    client.DownloadFileCompleted += new AsyncCompletedEventHandler(Completed);
            //    client.DownloadFileAsync(new Uri("http://squints.io/Curt/AppLauncher.zip"), Location+"\\AppLauncher.zip");
-               CloseLauncher();
+                
                client.DownloadFile(new Uri("http://squints.io/Curt/AppLauncher.zip"), Location + Properties.Settings.Default.zipName);
                if (!string.IsNullOrEmpty(startupMode) && startupMode.Equals("Update"))
                    return Update();
@@ -127,13 +119,13 @@ namespace CurtInstaller.Models
                {
                    Directory.CreateDirectory(Location + "\\tmp");
                }
-               //Directory.Move(Location + "\\AppLauncher\\AppLauncher", Location + "\\tmp\\AppLauncher");     
-               foreach (var f in Directory.GetFiles(Location + "\\AppLauncher\\AppLauncher"))
-               {
-                   File.Move(f, Location + "\\tmp\\AppLauncher" + f);
-               }
-               var b = InstallFiles();
+              
+               if (!Directory.Exists(Location + "\\tmp\\AppLauncher\\"))
+                   Directory.CreateDirectory(Location + "\\tmp\\AppLauncher\\");
+               MoveFiles();
                File.Move(Location + "\\tmp\\AppLauncher\\InstalledSoftware.bin", Location + "\\AppLauncher\\AppLauncher\\InstalledSoftware.bin");
+               var b = InstallFiles();
+         
                return b;
            }
            catch (Exception ex)
@@ -142,6 +134,17 @@ namespace CurtInstaller.Models
                return false;
            }
        }
+
+       private void MoveFiles()
+       {
+           var Myfiles = Directory.GetFiles(Location + "\\AppLauncher\\AppLauncher");
+           foreach (var aFile in Myfiles.ToList<string>())
+           {
+               var FileName = aFile.Split('\\').Last();
+               File.Move(aFile, Location + "\\tmp\\AppLauncher\\" + FileName);
+           }
+       }
+      
 
        public void RollBack()
        {

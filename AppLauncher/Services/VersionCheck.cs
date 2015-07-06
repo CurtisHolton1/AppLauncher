@@ -53,12 +53,13 @@ namespace AppLauncher.Services
                            if (!Directory.Exists(AppDomain.CurrentDomain.BaseDirectory + "..\\..\\tmp"))
                            {
                                Directory.CreateDirectory(AppDomain.CurrentDomain.BaseDirectory + "..\\..\\tmp");
+                               Directory.Move(AppDomain.CurrentDomain.BaseDirectory + "..\\CurtInstaller", AppDomain.CurrentDomain.BaseDirectory + "..\\..\\tmp\\CurtInstaller");
                                p.StartInfo.Arguments = "Update";
                                p.StartInfo.FileName = AppDomain.CurrentDomain.BaseDirectory + "..\\..\\tmp\\CurtInstaller\\CurtInstaller.exe";
                                p.Start();
-                               windowOpen = false;
-                               System.Environment.Exit(0);
+                               windowOpen = false;                         
                            }
+                           System.Environment.Exit(0);
                            return true;
                        }
                    case MessageBoxResult.No:
