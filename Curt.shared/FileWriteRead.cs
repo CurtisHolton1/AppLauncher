@@ -13,9 +13,11 @@ namespace Curt.Helpers
 {
     public class FileWriteRead
     {
-        public async Task<bool> WriteFile(List<DirSearchItem> locations, string locationToWrite)
+      
+        public async Task<bool> WriteFile(List<DirSearchItem> locations, string locationToWrite,System.IProgress<double> progressIndicator)
         {
-            Task<List<Executable>> software = Task.Run(()=>Startup.GetInstalledSoftware(locations));
+              
+            Task<List<Executable>> software = Task.Run(()=>Startup.GetInstalledSoftware(locations,progressIndicator));
             var thing = await software;
             using (var file = File.OpenWrite(locationToWrite + "//AppLauncher//AppLauncher//InstalledSoftware.bin"))
             {

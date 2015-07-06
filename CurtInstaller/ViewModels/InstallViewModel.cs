@@ -14,9 +14,7 @@ namespace CurtInstaller.ViewModels
 {
     class InstallViewModel : ViewModelBase
     {
-        private InstallModel model;
-        private int installValue;
-        public int InstallValue { get { return installValue; } set { installValue = value; model.InstallValue = value; RaisePropertyChanged("InstallValue"); } }
+        private InstallModel model;  
         public string StartupMode { get; set; }
         public InstallViewModel()
         {
@@ -25,7 +23,7 @@ namespace CurtInstaller.ViewModels
 
         }
 
-        public async Task<string> InstallWrapper()
+        public async Task<string> InstallWrapper(System.IProgress<double> progressIndicator)
         {
             try
             {
@@ -46,14 +44,12 @@ namespace CurtInstaller.ViewModels
                     if (string.IsNullOrEmpty(StartupMode)) //install mode
                     {
                         FileWriteRead fileObject = new FileWriteRead();
-                        await fileObject.WriteFile(Startup.GetInitialLocations(), model.Location);
-                    }
-           
+                        await fileObject.WriteFile(Startup.GetInitialLocations(), model.Location, progressIndicator);
+                    }           
                 }
                 else
                 {
-                    model.RollBack();
-                   
+                    model.RollBack();                
                 }
                 model.StartLauncher();
 

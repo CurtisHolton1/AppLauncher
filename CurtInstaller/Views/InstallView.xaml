@@ -5,6 +5,6 @@
     <Grid HorizontalAlignment="Center">
         <TextBlock  Text="Please wait while the application is installed" Margin="0,50,0,0"></TextBlock>
         
-        <!--<ProgressBar x:Name="InstallBar" Height="20" Width="160" Value="{Binding InstallValue, UpdateSourceTrigger=PropertyChanged}" ></ProgressBar>-->
+        <ProgressBar x:Name="InstallBar" Height="20" Width="160"  ></ProgressBar>
     </Grid>
 </Window>

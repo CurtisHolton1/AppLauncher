@@ -75,7 +75,7 @@ namespace Curt.shared
       //}
 
 
-       public static async Task<List<Executable>> GetInstalledSoftware(List<DirSearchItem> locations)
+       public static async Task<List<Executable>> GetInstalledSoftware(List<DirSearchItem> locations, IProgress<double> progress)
        {
           // var RegistryList = await SearchRegistry();
            //if (RegistryList != null && RegistryList.Count > 0)
@@ -83,10 +83,16 @@ namespace Curt.shared
            //        locations.Add(RegistryList[i]);
            
            int index;
+           double count = 1;
            List<Executable> software = new List<Executable>();                  
            List<System.IO.FileInfo> tmp = new List<System.IO.FileInfo>();
+           
            foreach (DirSearchItem d in locations)
            {
+               if (progress != null)
+               {
+                   progress.Report(count / locations.Count);
+               }
                tmp = TraverseTree(d.Path, d.Levels);
                if (tmp != null)
                    foreach (System.IO.FileInfo fileInfo in tmp)
@@ -105,6 +111,7 @@ namespace Curt.shared
                                software.Add(new Executable { Name = char.ToUpper(fileInfo.Name[0]) + fileInfo.Name.Substring(1), Location = fileInfo.FullName, LastUsed = fileInfo.LastAccessTime });
                            }
                    }
+               count++;
            }
            return software;
        }
@@ -139,11 +146,14 @@ namespace Curt.shared
                    {
                        try
                        {
-                           System.IO.FileInfo fi = new System.IO.FileInfo(file);
-                           
-                           if (fi.Extension.Equals(".exe"))
+                           if (file.Length < 256)
                            {
-                               retList.Add(fi);
+                               System.IO.FileInfo fi = new System.IO.FileInfo(file);
+
+                               if (fi.Extension.Equals(".exe"))
+                               {
+                                   retList.Add(fi);
+                               }
                            }
                        }
                        catch (Exception) { }

@@ -41,7 +41,6 @@ namespace AppLauncher
         int tickCount;
         public MainWindow()
         {
-
             //check in comment
             InitializeComponent();
             WindowWatcher.AddWindow(this);
