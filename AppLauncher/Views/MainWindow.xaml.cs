@@ -21,6 +21,7 @@ using Curt.shared;
 using System.Timers;
 using System.Configuration;
 using Curt.Helpers;
+using System.Threading;
 
 namespace AppLauncher
 {
@@ -45,20 +46,27 @@ namespace AppLauncher
             InitializeComponent();
             WindowWatcher.AddWindow(this);
             HotKey _hotKey = new HotKey(Key.Z, KeyModifier.Shift | KeyModifier.Win, OnHotKeyHandler);
-            SharedHelper.KillProcess("CurtInstaller");
-            SharedHelper.DeleteDirectory(AppDomain.CurrentDomain.BaseDirectory + "..\\..\\tmp");
-
-            TextBar1.Focus();
-            //Startup.RemoveStartup();
-            Startup.SetStartup();
-            FileWriteRead fileObject = new FileWriteRead();
-            software = fileObject.FileDeserialization();
+            Start();
             updateFlag = true ;
             timerFlag = false;
             timer.Interval = TimeSpan.FromMinutes(1);
             timer.Tick += timer_Tick;
             timer.Start();
         }
+
+        private async Task<string> Start()
+        {
+            SharedHelper.KillProcess("CurtInstaller");
+            SharedHelper.DeleteDirectory(AppDomain.CurrentDomain.BaseDirectory + "..\\..\\tmp");
+            TextBar1.Focus();
+            //Startup.RemoveStartup();
+            Startup.SetStartup();
+            FileWriteRead fileObject = new FileWriteRead();
+            software =  fileObject.FileDeserialization();
+           //Dispatcher.Invoke(())
+            return "";
+        }
+
 
         private void timer_Tick(object sender, EventArgs e)
         {
@@ -108,8 +116,18 @@ namespace AppLauncher
                         {
                             set = e.Location.Substring(0, 40) + "...";
                         }
-                        ContentColumn.Width = 200;
-                        OptionColumn.Width = 350;
+                        if (!Dispatcher.CheckAccess())
+                        {
+                            Dispatcher.Invoke(() => ContentColumn.Width = 200, DispatcherPriority.Normal);
+                            Dispatcher.Invoke(() =>OptionColumn.Width = 350, DispatcherPriority.Normal);
+
+                        }
+                        else
+                        {
+                            ContentColumn.Width = 200;
+                            OptionColumn.Width = 350;
+                        }
+
                         searchList.Add(new DropDownItem { Content = e.Name.Substring(0, e.Name.Length - 4), Path = e.Location, ImgSrc = e.ImgSrc, LastUsed = e.LastUsed, Option = set });
                     }
                 }
@@ -144,10 +162,19 @@ namespace AppLauncher
                         setString = exp.Evaluate().ToString();
                         if (flag)
                         {
+                            if (!Dispatcher.CheckAccess())
+                            {
+                                Dispatcher.Invoke(() => TextBar1.Text = setString, DispatcherPriority.Normal);
+                                Dispatcher.Invoke(() => TextBar1.Select(TextBar1.Text.Length, 0), DispatcherPriority.Normal);
 
-                            TextBar1.Text = setString;
-                            //sets cursor
-                            TextBar1.Select(TextBar1.Text.Length, 0);
+                            }
+                            else
+                            {
+                                TextBar1.Text = setString;
+                                //sets cursor
+                                TextBar1.Select(TextBar1.Text.Length, 0);
+                            }
+                            
                         }
                     }
                     catch (Exception ex)
@@ -165,19 +192,30 @@ namespace AppLauncher
         {
             mode = "search";
             List<DropDownItem> searchList = new List<DropDownItem>();
-            if (TextBar1.Text != string.Empty)
+            if (text != string.Empty)
             {
-                ContentColumn.Width = 300;
-                OptionColumn.Width = 250;
+                if (!Dispatcher.CheckAccess())
+                {
+                    Dispatcher.Invoke(() => ContentColumn.Width = 300, DispatcherPriority.Normal);
+                    Dispatcher.Invoke(() => OptionColumn.Width = 250, DispatcherPriority.Normal);
+                }
+                else
+                {
+                    ContentColumn.Width = 300;
+                    OptionColumn.Width = 250;
+                }
                 Uri imageUri = new Uri(@"..\Content\goog.ico", UriKind.Relative);
-                BitmapImage imageBitmap = new BitmapImage(imageUri);
+                BitmapImage imageBitmap = new BitmapImage(imageUri);    
                 searchList.Add(new DropDownItem { Content = text, Path = "https://www.google.com/#q=", ImgSrc = imageBitmap });
+                //imageBitmap.Freeze();
                 imageUri = new Uri(@"..\Content\stack.png", UriKind.Relative);
                 imageBitmap = new BitmapImage(imageUri);
                 searchList.Add(new DropDownItem { Content = text, Path = "http://stackoverflow.com/search?q=", Option = "Stack Overflow", ImgSrc = imageBitmap });
                 imageUri = new Uri(@"..\Content\youtube.png", UriKind.Relative);
+                //imageBitmap.Freeze();
                 imageBitmap = new BitmapImage(imageUri);
                 searchList.Add(new DropDownItem { Content = text, Path = "https://www.youtube.com/results?search_query=", ImgSrc = imageBitmap });
+                //imageBitmap.Freeze();
             }
 
             return searchList;
@@ -196,7 +234,7 @@ namespace AppLauncher
                 this.Height = 95;
             }
 
-            dropDownList = await AppSearch(text);
+            dropDownList = await Task.Run(()=> AppSearch(text));
             mode = "app";
             ListView1.Items.Clear();
             if (dropDownList != null && dropDownList.Count > 0)
@@ -208,11 +246,12 @@ namespace AppLauncher
             }
             else
             {
-                text = await Calculator(text);
+                text = await Task.Run(()=> Calculator(text));
                 if (mode == "calc")
-                {
-                    ContentColumn.Width = 300;
-                    OptionColumn.Width = 250;
+                {                                   
+                        ContentColumn.Width = 300;
+                        OptionColumn.Width = 250;
+                    
                     Uri imageUri = new Uri(@"..\Content\calc.ico", UriKind.Relative);
                     BitmapImage imageBitmap = new BitmapImage(imageUri);
                     DropDownItem item = new DropDownItem { Content = text, Option = "Copy with enter", ImgSrc = imageBitmap };
@@ -241,6 +280,7 @@ namespace AppLauncher
                 this.Height = 95;
             }
             this.Height = 95 + (ListView1.Items.Count * 40);
+            
         }
 
         private void TextBar1_PreviewKeyDown(object sender, KeyEventArgs e)

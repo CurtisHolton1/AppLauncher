@@ -29,7 +29,7 @@ namespace Curt.Helpers
             return true;
         }
 
-        public List<Executable> FileDeserialization()
+        public  List<Executable> FileDeserialization()
         {
             List<Executable> software;
             if (!File.Exists(AppDomain.CurrentDomain.BaseDirectory + "InstalledSoftware.bin"))
