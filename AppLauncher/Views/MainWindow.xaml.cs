@@ -62,8 +62,8 @@ namespace AppLauncher
             //Startup.RemoveStartup();
             Startup.SetStartup();
             FileWriteRead fileObject = new FileWriteRead();
-            software =  fileObject.FileDeserialization();
-           //Dispatcher.Invoke(())
+            software =  await Task.Run(()=>fileObject.FileDeserialization());
+           
             return "";
         }
 
@@ -233,7 +233,6 @@ namespace AppLauncher
                 ListView1.Visibility = Visibility.Hidden;
                 this.Height = 95;
             }
-
             dropDownList = await Task.Run(()=> AppSearch(text));
             mode = "app";
             ListView1.Items.Clear();
