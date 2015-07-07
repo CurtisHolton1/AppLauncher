@@ -8,7 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.IO.Compression;
 using System.IO;
-
+using Curt.shared;
 namespace CurtInstaller.Models
 {
    public class InstallModel
@@ -18,12 +18,11 @@ namespace CurtInstaller.Models
         public int InstallValue { get { return installValue; } set { installValue = value; } }
         private string location;
         public string Location { get { return location; } set { location = value; } }
-        private List<string> filesInZip;
+        
        WebClient client;
        public InstallModel()
        {      
           client = new WebClient();
-          filesInZip = new List<string>();
        }
 
      
@@ -67,37 +66,7 @@ namespace CurtInstaller.Models
        private bool InstallFiles()
        {          
            try
-           {
-               
-
-             
-              //foreach (var e in entries)
-              //{
-              //    filesInZip.Add(e.FullName);
-              //}
-
-              //if (!System.IO.Directory.Exists(Location + "\\tmp"))
-              //{
-              //    System.IO.Directory.CreateDirectory(Location + "\\tmp\\CurtInstaller");
-                  
-              //}
-              //foreach (var f in filesInZip)
-              //{
-              //    if (File.Exists(Location + "\\" + f))
-              //    {
-              //        if (Directory.Exists(Location + "\\tmp\\" + f))
-              //        {
-              //            File.Move(Location + "\\" + f, Location + "\\tmp\\" + f);
-              //        }
-              //        else
-              //        {
-              //            Directory.CreateDirectory(Location + "\\tmp\\" + f);
-              //            File.Move(Location + "\\" + f, Location + "\\tmp\\" + f);
-              //        }
-                          
-              //    }
-              //}
-              //zip.Dispose();
+           {                        
                var z = ZipFile.OpenRead(Location + Properties.Settings.Default.zipName);
                z.ExtractToDirectory(Location);
                z.Dispose();
@@ -113,8 +82,10 @@ namespace CurtInstaller.Models
 
        private bool Update()
        {
+           SharedHelper.DeleteDirectory(Location + "\\AppLauncher\\Content");
            try
            {
+               
                if (!Directory.Exists(Location + "\\tmp\\AppLauncher"))
                {
                    Directory.CreateDirectory(Location + "\\tmp");
@@ -122,10 +93,11 @@ namespace CurtInstaller.Models
               
                if (!Directory.Exists(Location + "\\tmp\\AppLauncher\\"))
                    Directory.CreateDirectory(Location + "\\tmp\\AppLauncher\\");
-               MoveFiles();
+
+               MoveFiles(Location + "\\AppLauncher\\AppLauncher", Location + "\\tmp\\AppLauncher");
                File.Move(Location + "\\tmp\\AppLauncher\\InstalledSoftware.bin", Location + "\\AppLauncher\\AppLauncher\\InstalledSoftware.bin");
                var b = InstallFiles();
-         
+                
                return b;
            }
            catch (Exception ex)
@@ -135,13 +107,15 @@ namespace CurtInstaller.Models
            }
        }
 
-       private void MoveFiles()
+       private void MoveFiles(string toMove, string dest)
        {
-           var Myfiles = Directory.GetFiles(Location + "\\AppLauncher\\AppLauncher");
-           foreach (var aFile in Myfiles.ToList<string>())
+           var files = Directory.GetFiles(toMove);
+           if (!Directory.Exists(dest))
+               Directory.CreateDirectory(dest);
+           foreach (var aFile in files.ToList<string>())
            {
-               var FileName = aFile.Split('\\').Last();
-               File.Move(aFile, Location + "\\tmp\\AppLauncher\\" + FileName);
+               var fileName = aFile.Split('\\').Last();
+               File.Move(aFile, dest + "\\" + fileName);
            }
        }
       
@@ -150,15 +124,11 @@ namespace CurtInstaller.Models
        {
            System.Windows.MessageBox.Show("Something failed, rolling back changes, please wait.");
            //CloseLauncher();
-           //for (int i = 0; i < filesInZip.Count; i++)
-           //{
-           //    File.Delete(filesInZip[i]);
-           //}
-           //var dir = Directory.GetFiles(Location + "\\tmp","*");
-           //foreach (var f in dir)
-           //{
-           //    File.Move(Location+"\\tmp\\" + f,f);
-           //}       
+           SharedHelper.DeleteDirectory(Location + "\\AppLauncher\\AppLauncher", new List<string> {"InstalledSoftware.bin"});
+           SharedHelper.DeleteDirectory(Location + "\\AppLauncher\\CurtInstaller");
+           MoveFiles(Location + "\\tmp\\AppLauncher", Location + "\\AppLauncher\\AppLauncher");
+           MoveFiles(Location + "\\tmp\\CurtInstaller", Location + "\\AppLauncher\\CurtInstaller");
+ 
        }
 
        public void StartLauncher()

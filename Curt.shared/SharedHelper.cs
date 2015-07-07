@@ -10,7 +10,7 @@ namespace Curt.shared
 {
     public static class SharedHelper
     {
-        public static void DeleteDirectory(string target_dir)
+        public static void DeleteDirectory(string target_dir, List<string> ignored = null)
         {
             if (Directory.Exists(target_dir))
             {
@@ -19,13 +19,16 @@ namespace Curt.shared
 
                 foreach (string file in files)
                 {
-                    File.SetAttributes(file, FileAttributes.Normal);
-                    File.Delete(file);
+                    if (ignored == null || !ignored.Contains(file))
+                    {
+                        File.SetAttributes(file, FileAttributes.Normal);
+                        File.Delete(file);
+                    }
                 }
 
                 foreach (string dir in dirs)
                 {
-                    DeleteDirectory(dir);
+                    DeleteDirectory(dir,ignored);
                 }
 
                 Directory.Delete(target_dir, false);
@@ -42,6 +45,14 @@ namespace Curt.shared
                     theprocess.WaitForExit();
                 }
             }
+        }
+
+        public static void StartInstaller(string arg)
+        {
+            Process p = new Process();                      
+            p.StartInfo.Arguments = arg;
+            p.StartInfo.FileName = AppDomain.CurrentDomain.BaseDirectory +"..\\CurtInstaller\\CurtInstaller.exe";
+            p.Start();
         }
 
     }

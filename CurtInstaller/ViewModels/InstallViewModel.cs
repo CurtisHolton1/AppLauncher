@@ -32,8 +32,18 @@ namespace CurtInstaller.ViewModels
                     model.Location = System.IO.Path.GetDirectoryName(System.Windows.Forms.Application.ExecutablePath);
                     model.Location = System.IO.Directory.GetParent(model.Location).FullName;
                     model.Location = System.IO.Directory.GetParent(model.Location).FullName;  
-                    //model.Location = @"C:\Users\Curtis\Desktop\Blah";
-
+                    //model.Location = @"C:\Users\Curtis\Desktop\blah";
+                }
+                else if (!string.IsNullOrEmpty(StartupMode) && StartupMode.Equals("WriteFile"))
+                {
+                    model.Location = System.IO.Path.GetDirectoryName(System.Windows.Forms.Application.ExecutablePath);
+                    model.Location = System.IO.Directory.GetParent(model.Location).FullName;
+                    model.Location = System.IO.Directory.GetParent(model.Location).FullName;  
+                    FileWriteRead fileObject = new FileWriteRead();
+                    await fileObject.WriteFile(Startup.GetInitialLocations(),model.Location, progressIndicator);
+                    model.StartLauncher();
+                    System.Environment.Exit(0); 
+                    return "";
                 }
                 var success = model.Download(StartupMode);
                 //////////////////////////////////////
@@ -61,6 +71,7 @@ namespace CurtInstaller.ViewModels
             }
             return "";
         }
+
 
 
 

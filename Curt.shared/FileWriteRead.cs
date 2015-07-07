@@ -32,7 +32,12 @@ namespace Curt.Helpers
         public List<Executable> FileDeserialization()
         {
             List<Executable> software;
-
+            if (!File.Exists(AppDomain.CurrentDomain.BaseDirectory + "InstalledSoftware.bin"))
+            {
+                MessageBox.Show("Could not find InstalledSoftware.bin file. Writing new file, this could take a while...");
+                SharedHelper.StartInstaller("WriteFile");
+                
+            }
             using (var file = File.OpenRead(AppDomain.CurrentDomain.BaseDirectory + "InstalledSoftware.bin"))
             {
                 file.Position = 0;

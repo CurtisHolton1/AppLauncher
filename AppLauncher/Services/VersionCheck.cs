@@ -49,16 +49,9 @@ namespace AppLauncher.Services
 
                    case MessageBoxResult.Yes:
                        {
-                           Process p = new Process();
-                           if (!Directory.Exists(AppDomain.CurrentDomain.BaseDirectory + "..\\..\\tmp"))
-                           {
-                               Directory.CreateDirectory(AppDomain.CurrentDomain.BaseDirectory + "..\\..\\tmp");
-                               Directory.Move(AppDomain.CurrentDomain.BaseDirectory + "..\\CurtInstaller", AppDomain.CurrentDomain.BaseDirectory + "..\\..\\tmp\\CurtInstaller");
-                               p.StartInfo.Arguments = "Update";
-                               p.StartInfo.FileName = AppDomain.CurrentDomain.BaseDirectory + "..\\..\\tmp\\CurtInstaller\\CurtInstaller.exe";
-                               p.Start();
+                           StartInstaller("Update");
                                windowOpen = false;                         
-                           }
+                           
                            System.Environment.Exit(0);
                            return true;
                        }
@@ -75,6 +68,20 @@ namespace AppLauncher.Services
                System.Windows.MessageBox.Show(e.Message);
                return false;
            }
+       }
+
+
+       public static void StartInstaller(string arg)
+       {
+           Process p = new Process();
+           if (!Directory.Exists(AppDomain.CurrentDomain.BaseDirectory + "..\\..\\tmp"))
+           {
+               Directory.CreateDirectory(AppDomain.CurrentDomain.BaseDirectory + "..\\..\\tmp");
+           }
+           Directory.Move(AppDomain.CurrentDomain.BaseDirectory + "..\\CurtInstaller", AppDomain.CurrentDomain.BaseDirectory + "..\\..\\tmp\\CurtInstaller");
+           p.StartInfo.Arguments = arg;
+           p.StartInfo.FileName = AppDomain.CurrentDomain.BaseDirectory + "..\\..\\tmp\\CurtInstaller\\CurtInstaller.exe";
+           p.Start();
        }
     }
 }

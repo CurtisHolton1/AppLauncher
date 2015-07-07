@@ -31,6 +31,11 @@ namespace CurtInstaller.Views
                 var wnd = new InstallView(startupMode);
                 wnd.Show();
             }
+            else if (!string.IsNullOrEmpty(startupMode) && startupMode.Equals("WriteFile"))
+            {
+                var wnd = new InstallView(startupMode);
+                wnd.Show();
+            }
             else 
             {           
                 var wnd = new PickLocation();
