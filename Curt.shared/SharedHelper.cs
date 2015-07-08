@@ -25,12 +25,10 @@ namespace Curt.shared
                         File.Delete(file);
                     }
                 }
-
                 foreach (string dir in dirs)
                 {
                     DeleteDirectory(dir,ignored);
                 }
-
                 Directory.Delete(target_dir, false);
             }
         }

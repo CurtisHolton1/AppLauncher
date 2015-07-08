@@ -10,7 +10,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 
-namespace Curt.Helpers
+namespace Curt.shared
 {
     public class FileWriteRead
     {

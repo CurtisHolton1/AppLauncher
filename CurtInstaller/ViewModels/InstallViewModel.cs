@@ -1,5 +1,4 @@
-﻿using Curt.Helpers;
-using Curt.shared;
+﻿using Curt.shared;
 using CurtInstaller.Helpers;
 using CurtInstaller.Models;
 using System;
@@ -54,6 +53,8 @@ namespace CurtInstaller.ViewModels
                     {
                         FileWriteRead fileObject = new FileWriteRead();
                         await fileObject.WriteFile(Startup.GetInitialLocations(), model.Location, progressIndicator);
+                     await Task.Run(()=> FileSearch.CreateFilesDatabase(model.Location + "\\AppLauncher\\AppLauncher","FilesDatabase",true));
+                      
                     }           
                 }
                 else
@@ -65,7 +66,7 @@ namespace CurtInstaller.ViewModels
             }               
             catch (Exception e)
             {
-               // System.Windows.MessageBox.Show("error in installwrapper: " + e.Message);
+                System.Windows.MessageBox.Show("error in installwrapper: " + e.Message);
             }
             return "";
         }

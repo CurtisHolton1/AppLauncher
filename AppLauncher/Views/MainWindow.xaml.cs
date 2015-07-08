@@ -14,7 +14,6 @@ using ProtoBuf;
 using AppLauncher.Services;
 using Curt.shared;
 using System.Configuration;
-using Curt.Helpers;
 using Curt.shared.Models;
 
 namespace AppLauncher
