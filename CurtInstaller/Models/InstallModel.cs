@@ -17,53 +17,34 @@ namespace CurtInstaller.Models
         private int installValue;
         public int InstallValue { get { return installValue; } set { installValue = value; } }
         private string location;
-        public string Location { get { return location; } set { location = value; } }
-        
-       WebClient client;
-       public InstallModel()
+        public string Location { get { return location; } set { location = value; } }        
+        WebClient client;
+
+        public InstallModel()
        {      
           client = new WebClient();
        }
-
-     
-
-       public bool Download(string startupMode)
-       {
-           
+    
+       public async Task<bool> Download(string startupMode)
+       {          
            try
            {
-           //    client.DownloadProgressChanged += new DownloadProgressChangedEventHandler(ProgressChanged);
-           //    client.DownloadFileCompleted += new AsyncCompletedEventHandler(Completed);
-           //    client.DownloadFileAsync(new Uri("http://squints.io/Curt/AppLauncher.zip"), Location+"\\AppLauncher.zip");
-                
+           //    client.DownloadProgressChanged += new DownloadProgressChangedEventHandler(ProgressChanged);        
+               //    client.DownloadFileAsync(new Uri("http://squints.io/Curt/AppLauncher.zip"), Location+ Properties.Settings.Default.zipName);     
                client.DownloadFile(new Uri("http://squints.io/Curt/AppLauncher.zip"), Location + Properties.Settings.Default.zipName);
                if (!string.IsNullOrEmpty(startupMode) && startupMode.Equals("Update"))
-                   return Update();
+                   return await Task.Run(()=>Update());
                else
-             return  InstallFiles();
+             return  await Task.Run(()=>InstallFiles());
            }
            catch (Exception e)
            {
                System.Windows.MessageBox.Show("Error downloading file: " + e.Message);
                return false;
-
            }
        }
 
-       private void Completed(object sender, AsyncCompletedEventArgs e)
-       {
-            //used for async download
-           //InstallFiles();
-       }
-
-       private void ProgressChanged(object sender, DownloadProgressChangedEventArgs e)
-       {
-           //used for async download
-         //for install bar
-
-       }
-
-       private bool InstallFiles()
+       private async Task<bool> InstallFiles()
        {          
            try
            {                        
@@ -80,24 +61,20 @@ namespace CurtInstaller.Models
            }
        }
 
-       private bool Update()
+       private async Task<bool> Update()
        {
            SharedHelper.DeleteDirectory(Location + "\\AppLauncher\\Content");
            try
-           {
-               
+           {               
                if (!Directory.Exists(Location + "\\tmp\\AppLauncher"))
                {
                    Directory.CreateDirectory(Location + "\\tmp");
-               }
-              
+               }              
                if (!Directory.Exists(Location + "\\tmp\\AppLauncher\\"))
                    Directory.CreateDirectory(Location + "\\tmp\\AppLauncher\\");
-
                MoveFiles(Location + "\\AppLauncher\\AppLauncher", Location + "\\tmp\\AppLauncher");
                File.Move(Location + "\\tmp\\AppLauncher\\InstalledSoftware.bin", Location + "\\AppLauncher\\AppLauncher\\InstalledSoftware.bin");
-               var b = InstallFiles();
-                
+               bool b = await Task.Run(() => InstallFiles());               
                return b;
            }
            catch (Exception ex)
@@ -117,9 +94,8 @@ namespace CurtInstaller.Models
                var fileName = aFile.Split('\\').Last();
                File.Move(aFile, dest + "\\" + fileName);
            }
-       }
-      
-
+       } 
+     
        public void RollBack()
        {
            System.Windows.MessageBox.Show("Something failed, rolling back changes, please wait.");
@@ -128,7 +104,6 @@ namespace CurtInstaller.Models
            SharedHelper.DeleteDirectory(Location + "\\AppLauncher\\CurtInstaller");
            MoveFiles(Location + "\\tmp\\AppLauncher", Location + "\\AppLauncher\\AppLauncher");
            MoveFiles(Location + "\\tmp\\CurtInstaller", Location + "\\AppLauncher\\CurtInstaller");
- 
        }
 
        public void StartLauncher()

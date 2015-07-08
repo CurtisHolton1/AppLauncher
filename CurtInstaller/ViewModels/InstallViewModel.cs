@@ -32,7 +32,6 @@ namespace CurtInstaller.ViewModels
                     model.Location = System.IO.Path.GetDirectoryName(System.Windows.Forms.Application.ExecutablePath);
                     model.Location = System.IO.Directory.GetParent(model.Location).FullName;
                     model.Location = System.IO.Directory.GetParent(model.Location).FullName;  
-                    //model.Location = @"C:\Users\Curtis\Desktop\blah";
                 }
                 else if (!string.IsNullOrEmpty(StartupMode) && StartupMode.Equals("WriteFile"))
                 {
@@ -45,7 +44,7 @@ namespace CurtInstaller.ViewModels
                     System.Environment.Exit(0); 
                     return "";
                 }
-                var success = model.Download(StartupMode);
+                var success = await Task.Run(()=> model.Download(StartupMode));
                 //////////////////////////////////////
                // success = false;
                 ///////////////////////////////////////
@@ -62,12 +61,11 @@ namespace CurtInstaller.ViewModels
                     model.RollBack();                
                 }
                 model.StartLauncher();
-
                 System.Environment.Exit(0);             
             }               
             catch (Exception e)
             {
-                System.Windows.MessageBox.Show("error in installwrapper: " + e.Message);
+               // System.Windows.MessageBox.Show("error in installwrapper: " + e.Message);
             }
             return "";
         }

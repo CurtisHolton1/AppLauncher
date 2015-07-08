@@ -1,7 +1,6 @@
 ﻿using NCalc;
 using System;
 using System.Collections.Generic;
-using System.Collections.Specialized;
 using System.Diagnostics;
 using System.Linq;
 using System.Text.RegularExpressions;
@@ -10,18 +9,13 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media.Imaging;
-using System.Runtime.InteropServices;
 using System.Windows.Threading;
-using System.Drawing;
-using AppLauncher.Models;
-using System.IO;
 using ProtoBuf;
 using AppLauncher.Services;
 using Curt.shared;
-using System.Timers;
 using System.Configuration;
 using Curt.Helpers;
-using System.Threading;
+using Curt.shared.Models;
 
 namespace AppLauncher
 {

@@ -1,4 +1,5 @@
 ﻿using Curt.shared;
+using Curt.shared.Models;
 using ProtoBuf;
 using System;
 using System.Collections.Generic;
@@ -25,7 +26,6 @@ namespace Curt.Helpers
                 Serializer.Serialize<List<Executable>>(file, thing);
                 file.Dispose();
             }
-
             return true;
         }
 
@@ -35,8 +35,7 @@ namespace Curt.Helpers
             if (!File.Exists(AppDomain.CurrentDomain.BaseDirectory + "InstalledSoftware.bin"))
             {
                 MessageBox.Show("Could not find InstalledSoftware.bin file. Writing new file, this could take a while...");
-                SharedHelper.StartInstaller("WriteFile");
-                
+                SharedHelper.StartInstaller("WriteFile");           
             }
             using (var file = File.OpenRead(AppDomain.CurrentDomain.BaseDirectory + "InstalledSoftware.bin"))
             {
@@ -56,7 +55,6 @@ namespace Curt.Helpers
                 {
                 
                 }
-
             }
             return software;
         }
