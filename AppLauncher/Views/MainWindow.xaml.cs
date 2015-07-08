@@ -62,8 +62,7 @@ namespace AppLauncher
             //Startup.RemoveStartup();
             Startup.SetStartup();
             FileWriteRead fileObject = new FileWriteRead();
-            software =  await Task.Run(()=>fileObject.FileDeserialization());
-           
+            software = await Task.Run(() => fileObject.FileDeserialization());        
             return "";
         }
 
@@ -205,7 +204,7 @@ namespace AppLauncher
                     OptionColumn.Width = 250;
                 }
                 Uri imageUri = new Uri(@"..\Content\goog.ico", UriKind.Relative);
-                BitmapImage imageBitmap = new BitmapImage(imageUri);    
+                BitmapImage imageBitmap = new BitmapImage(imageUri);                 
                 searchList.Add(new DropDownItem { Content = text, Path = "https://www.google.com/#q=", ImgSrc = imageBitmap });
                 //imageBitmap.Freeze();
                 imageUri = new Uri(@"..\Content\stack.png", UriKind.Relative);
@@ -284,16 +283,20 @@ namespace AppLauncher
 
         private void TextBar1_PreviewKeyDown(object sender, KeyEventArgs e)
         {
+            
             if (e.Key == Key.Return && !ListView1.Items.IsEmpty)
             {
-                ListView1_KeyDown(sender, e);
+                ListView1_PreviewKeyDown(sender, e);
             }
             else if (e.Key == Key.Down && !ListView1.Items.IsEmpty)
             {
-                ListView1.UpdateLayout();
-                ListView1.Focus();
-                ListView1.SelectedItem = ListView1.Items[0];
+                ListView1.UpdateLayout();             
+                ListViewItem item = ListView1.ItemContainerGenerator.ContainerFromIndex(ListView1.SelectedIndex) as ListViewItem;
+                item.IsSelected = true;
+                Keyboard.Focus(item);
+                
             }
+           
         }
 
         private void Window_Deactivated(object sender, EventArgs e)
@@ -312,53 +315,6 @@ namespace AppLauncher
             this.ListView1.Items.Add(item);
             ListView1.SelectedItem = ListView1.Items[0];
             ListView1.Visibility = Visibility.Visible;
-        }
-
-        private void ListView1_KeyDown(object sender, KeyEventArgs e)
-        {
-            if (e.Key == Key.Return && !ListView1.Items.IsEmpty && mode == "search")
-            {
-                DropDownItem item = new DropDownItem();
-                item = (DropDownItem)ListView1.SelectedItem;
-                Process.Start(item.Path + item.Content);
-                TextBar1.Clear();
-            }
-            else if (e.Key == Key.Return && !ListView1.Items.IsEmpty && mode == "calc")
-            {
-                DropDownItem item = new DropDownItem();
-                item = (DropDownItem)ListView1.SelectedItem;
-                if (!item.Option.Equals(""))
-                    Clipboard.SetText(item.Content);
-                TextBar1.Clear();
-            }
-            else if (e.Key == Key.Return && !ListView1.Items.IsEmpty && mode == "app")
-            {
-                try
-                {
-                    DropDownItem item = new DropDownItem();
-                    item = (DropDownItem)ListView1.SelectedItem;
-                    Process.Start(item.Path);
-                    TextBar1.Clear();
-                }
-                catch (Exception ex)
-                {
-
-                }
-            }
-            else if (e.Key == Key.Up && ListView1.SelectedItem == ListView1.Items[0])
-            {
-                TextBar1.Focus();
-            }
-        }
-
-        private void TextBar1_LostFocus(object sender, RoutedEventArgs e)
-        {
-            Console.WriteLine("lost focus");
-        }
-
-        private void TextBar1_GotFocus(object sender, RoutedEventArgs e)
-        {
-            Console.WriteLine("got focus");
         }
 
         private void ListView1_MouseDoubleClick(object sender, MouseButtonEventArgs e)
@@ -400,11 +356,48 @@ namespace AppLauncher
                 await CheckVersion();
             }
         }
+
+        private void ListView1_PreviewKeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Return && !ListView1.Items.IsEmpty && mode == "search")
+            {
+                DropDownItem item = new DropDownItem();
+                item = (DropDownItem)ListView1.SelectedItem;
+                Process.Start(item.Path + item.Content);
+                TextBar1.Clear();
+            }
+            else if (e.Key == Key.Return && !ListView1.Items.IsEmpty && mode == "calc")
+            {
+                DropDownItem item = new DropDownItem();
+                item = (DropDownItem)ListView1.SelectedItem;
+                if (!item.Option.Equals(""))
+                    Clipboard.SetText(item.Content);
+                TextBar1.Clear();
+            }
+            else if (e.Key == Key.Return && !ListView1.Items.IsEmpty && mode == "app")
+            {
+                try
+                {
+                    DropDownItem item = new DropDownItem();
+                    item = (DropDownItem)ListView1.SelectedItem;
+                    Process.Start(item.Path);
+                    TextBar1.Clear();
+                }
+                catch (Exception ex)
+                {
+
+                }
+            }
+            else if (e.Key == Key.Up && ListView1.SelectedItem == ListView1.Items[0])
+            {
+                TextBar1.Focus();
+            }
+            
+        }
+      
+
+      
         #endregion
-
-       
-
-
     }
 }
 
