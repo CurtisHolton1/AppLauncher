@@ -53,7 +53,7 @@ namespace CurtInstaller.ViewModels
                     {
                         FileWriteRead fileObject = new FileWriteRead();
                         await fileObject.WriteFile(Startup.GetInitialLocations(), model.Location, progressIndicator);
-                     await Task.Run(()=> FileSearch.CreateFilesDatabase(model.Location + "\\AppLauncher\\AppLauncher","FilesDatabase",true));
+                     await Task.Run(()=> FileSearch.CreateFilesDatabase(model.Location + "\\AppLauncher\\AppLauncher","FilesDatabase.sqlite",true));
                       
                     }           
                 }

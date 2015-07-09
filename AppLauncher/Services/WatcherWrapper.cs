@@ -4,10 +4,11 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-
+using Curt.shared;
+using Curt.shared.Models;
 namespace AppLauncher.Models
 {
-    class WatcherWrapper
+   public class WatcherWrapper
     {
        private FileSystemWatcher watcher = new FileSystemWatcher();
        public WatcherWrapper(string dirPath)
@@ -21,11 +22,13 @@ namespace AppLauncher.Models
         }
           private void OnCreated(object source, FileSystemEventArgs e)
         {
-           
-            var path = e.FullPath;
-            Console.WriteLine(path);
-             
-
+            if (!e.FullPath.Contains("Recycle.Bin"))
+            {
+                FileWriteRead writer = new FileWriteRead();
+                FileInfo f = new FileInfo(e.FullPath);
+                Executable exe = new Executable(f);
+                writer.AddToFile(exe);
+            }
             
         }
         private void OnDeleted(object source, FileSystemEventArgs e){

@@ -73,6 +73,11 @@ namespace AppLauncher
             return "";
         }
 
+
+
+
+
+
         #region INotifyPropertyChanged Members
 
         public event PropertyChangedEventHandler PropertyChanged;

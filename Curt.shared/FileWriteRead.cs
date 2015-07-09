@@ -58,6 +58,24 @@ namespace Curt.shared
             }
             return software;
         }
-       
+
+        public bool AddToFile(Executable e)
+        {
+            try
+            {
+                using (var file = File.OpenWrite("InstalledSoftware.bin"))
+                {
+                    file.Position = file.Length;
+                    Serializer.Serialize<Executable>(file, e);
+                    file.Dispose();
+                    return true;
+                }
+            }
+            catch (Exception ex)
+            {
+                return false;
+            }
+        }
+
     }
 }

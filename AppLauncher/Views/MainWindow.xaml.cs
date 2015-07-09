@@ -15,6 +15,7 @@ using AppLauncher.Services;
 using Curt.shared;
 using System.Configuration;
 using Curt.shared.Models;
+using AppLauncher.Models;
 
 namespace AppLauncher
 {
@@ -33,16 +34,20 @@ namespace AppLauncher
         bool timerFlag;
         bool updateFlag;
         int tickCount;
+        ILookup<string, string> fileTable;
+
         public MainWindow()
         {
             //check in comment
             InitializeComponent();
             WindowWatcher.AddWindow(this);
-            HotKey _hotKey = new HotKey(Key.Z, KeyModifier.Shift | KeyModifier.Win, OnHotKeyHandler);
+            WatcherWrapper fileSystemWatcher = new WatcherWrapper("c:\\");
+            fileTable = FileSearch.GetFilesFromDB("FilesDatabase.sqlite");
+
             Start();
             updateFlag = true ;
             timerFlag = false;
-            timer.Interval = TimeSpan.FromMinutes(1);
+            timer.Interval = TimeSpan.FromMinutes(5);
             timer.Tick += timer_Tick;
             timer.Start();
         }
@@ -53,9 +58,15 @@ namespace AppLauncher
             SharedHelper.DeleteDirectory(AppDomain.CurrentDomain.BaseDirectory + "..\\..\\tmp");
             TextBar1.Focus();
             //Startup.RemoveStartup();
+            Key key;
+            Enum.TryParse(ConfigurationManager.AppSettings["Key"], out key);
+            KeyModifier keyMod;
+            Enum.TryParse(ConfigurationManager.AppSettings["KeyMod"], out keyMod);
+            HotKey _hotKey = new HotKey(key, keyMod, OnHotKeyHandler);
             Startup.SetStartup();
             FileWriteRead fileObject = new FileWriteRead();
-            software = await Task.Run(() => fileObject.FileDeserialization());        
+            software = await Task.Run(() => fileObject.FileDeserialization());    
+    
             return "";
         }
 
@@ -212,19 +223,37 @@ namespace AppLauncher
 
             return searchList;
         }
+
+        private async Task<List<DropDownItem>> FileSearcher(string text)
+        {
+            mode = "file";
+            List<DropDownItem> searchList = new List<DropDownItem>();
+            var filesFound = fileTable.Where(x => x.Key.ToLower().Contains(text.ToLower())).Take(10);
+            foreach (var f in filesFound)
+            {
+
+                searchList.Add(new DropDownItem { Path = f.Key, Content = f.Key });
+            }
+            return searchList;
+        }
+
+
         #endregion
 
         #region UI
         private async void TextBar1_TextChanged(object sender, TextChangedEventArgs e)
         {
+           
 
             String text = TextBar1.Text;
+            
             if (string.IsNullOrEmpty(text))
             {
                 ListView1.Items.Clear();
                 ListView1.Visibility = Visibility.Hidden;
                 this.Height = 95;
             }
+            
             dropDownList = await Task.Run(()=> AppSearch(text));
             mode = "app";
             ListView1.Items.Clear();
@@ -254,6 +283,12 @@ namespace AppLauncher
                 else
                 {
                     dropDownList = await WebSearch(text);
+                    ////////////
+                    if (text.StartsWith("find ")&& text.Length>5)
+                    {
+                        dropDownList = await Task.Run(() => FileSearcher(text.Substring(5, text.Length - 5)));
+                    }
+                    //////////////
                     ListView1.Items.Clear();
                     if (dropDownList != null)
                     {
@@ -263,6 +298,7 @@ namespace AppLauncher
                         }
                     }
                 }
+                
             }
             if (string.IsNullOrEmpty(text))
             {

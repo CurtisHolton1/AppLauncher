@@ -8,5 +8,7 @@
         <CheckBox Margin="120,2,0,0" Checked="CheckBox_Checked" Unchecked="CheckBox_Unchecked" VerticalAlignment="Top" HorizontalAlignment="Left" IsChecked="{Binding CheckBoxChecked, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"></CheckBox>
         <Button Content="Check for updates" Margin="140,0,0,0" HorizontalAlignment="Left" VerticalAlignment="Top" Click="Button_Click"></Button>
         </Grid>
+        <Grid>
+        </Grid>
     </Grid>
 </Window>

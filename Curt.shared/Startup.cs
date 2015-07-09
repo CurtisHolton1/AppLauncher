@@ -109,7 +109,7 @@ namespace Curt.shared
                            }
                            catch (Exception)
                            {
-                               software.Add(new Executable { Name = char.ToUpper(fileInfo.Name[0]) + fileInfo.Name.Substring(1), Location = fileInfo.FullName, LastUsed = fileInfo.LastAccessTime });
+                              // software.Add(new Executable { Name = char.ToUpper(fileInfo.Name[0]) + fileInfo.Name.Substring(1), Location = fileInfo.FullName, LastUsed = fileInfo.LastAccessTime });
                            }
                    }
                count++;
