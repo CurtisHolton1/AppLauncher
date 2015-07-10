@@ -59,16 +59,17 @@ namespace Curt.shared
             return software;
         }
 
-        public bool AddToFile(Executable e)
+        public bool ReWriteFile(List<Executable> software)
         {
             try
             {
+                 File.Delete("InstalledSoftware.bin");
                 using (var file = File.OpenWrite("InstalledSoftware.bin"))
                 {
-                    file.Position = file.Length;
-                    Serializer.Serialize<Executable>(file, e);
+                    file.Position = 0;                  
+                    Serializer.Serialize<List<Executable>>(file, software);
                     file.Dispose();
-                    return true;
+                     return true;
                 }
             }
             catch (Exception ex)

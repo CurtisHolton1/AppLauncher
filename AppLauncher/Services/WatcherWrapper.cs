@@ -11,6 +11,7 @@ namespace AppLauncher.Models
    public class WatcherWrapper
     {
        private FileSystemWatcher watcher = new FileSystemWatcher();
+      
        public WatcherWrapper(string dirPath)
         {          
             watcher.IncludeSubdirectories = true;
@@ -24,15 +25,23 @@ namespace AppLauncher.Models
         {
             if (!e.FullPath.Contains("Recycle.Bin"))
             {
-                FileWriteRead writer = new FileWriteRead();
                 FileInfo f = new FileInfo(e.FullPath);
                 Executable exe = new Executable(f);
-                writer.AddToFile(exe);
-            }
+                var mainWindow = WindowWatcher.GetWindowOfType<MainWindow>();
+                (mainWindow as MainWindow).AddToSoftware(exe);
+               
+            } 
             
         }
         private void OnDeleted(object source, FileSystemEventArgs e){
+            if (!e.FullPath.Contains("Recycle.Bin"))
+            {               
+                FileInfo f = new FileInfo(e.FullPath);
+                Executable exe = new Executable(f);
+                var mainWindow = WindowWatcher.GetWindowOfType<MainWindow>();
+                (mainWindow as MainWindow).RemoveFromSoftware(exe);
 
+            } 
         }
     }
 }

@@ -41,7 +41,7 @@ namespace AppLauncher
             InitializeComponent();
             WindowWatcher.AddWindow(this);
             //not ready yet////////////////////
-            //WatcherWrapper fileSystemWatcher = new WatcherWrapper("c:\\");
+            WatcherWrapper fileSystemWatcher = new WatcherWrapper("c:\\");
             ///////////////////////////////////
             fileTable = FileSearch.GetFilesFromDB("FilesData.sqlite");
 
@@ -53,6 +53,39 @@ namespace AppLauncher
             timer.Start();
         }
 
+        public void AddToSoftware(Executable executable)
+        {
+            if (!software.Contains(executable))
+            {
+                var index = software.FindIndex(f => f.Name.Equals(char.ToUpper(executable.Name[0]) + executable.Name.Substring(1)));
+                if (index < 0)
+                {
+                    software.Add(executable);
+                    FileWriteRead fileObject = new FileWriteRead();
+                    fileObject.ReWriteFile(software);
+                }
+            }
+        }
+
+        public void RemoveFromSoftware(Executable executable)
+        {
+            FileWriteRead fileObject = new FileWriteRead();
+            if (software.Contains(executable))
+            {
+                software.Remove(executable);           
+                fileObject.ReWriteFile(software);
+            }
+            else
+            {
+               var index = software.FindIndex(x => x.Name.Equals(executable.Name) && x.Location.Equals(executable.Location));
+               if (index >= 0)
+               {
+                  software.Remove(software.ElementAt(index));
+                   fileObject.ReWriteFile(software);
+               }
+            }            
+        }
+        
         private async Task<string> Start()
         {
             SharedHelper.KillProcess("CurtInstaller");
@@ -240,7 +273,7 @@ namespace AppLauncher
                         {
                             foreach (var f2 in f.ToList())
                             {
-                                searchList.Add(new DropDownItem { Path = f2, Content = f.Key });
+                                searchList.Add(new DropDownItem { Path = f2, Content = f.Key, Option = f2 });
 
                             }
                         }
@@ -249,6 +282,17 @@ namespace AppLauncher
                             System.Windows.MessageBox.Show("error in inner: " + exc.Message);
                         }
                     }
+                     if (!Dispatcher.CheckAccess())
+                        {
+                            Dispatcher.Invoke(() => ContentColumn.Width = 200, DispatcherPriority.Normal);
+                            Dispatcher.Invoke(() =>OptionColumn.Width = 350, DispatcherPriority.Normal);
+
+                        }
+                        else
+                        {
+                            ContentColumn.Width = 200;
+                            OptionColumn.Width = 350;
+                        }
                 }
                 catch (Exception ex)
                 {
@@ -312,6 +356,7 @@ namespace AppLauncher
                     ////////////
                     try
                     {
+                        
                         if (text.StartsWith("find ") && text.Length > 5)
                         {
                             dropDownList = await Task.Run(() => FileSearcher(text.Substring(5, text.Length - 5)));
@@ -381,7 +426,7 @@ namespace AppLauncher
 
         private void ListView1_MouseDoubleClick(object sender, MouseButtonEventArgs e)
         {
-            if(mode.Equals("Search")||mode.Equals("app")){
+            if(mode.Equals("Search")||mode.Equals("app")||mode.Equals("file")){
             DropDownItem item = new DropDownItem();
             item = (DropDownItem)ListView1.SelectedItem;
             Process.Start(item.Path);
@@ -432,11 +477,18 @@ namespace AppLauncher
             }
             else if (e.Key == Key.Return && !ListView1.Items.IsEmpty && mode == "calc")
             {
-                DropDownItem item = new DropDownItem();
-                item = (DropDownItem)ListView1.SelectedItem;
-                if (!item.Option.Equals(""))
-                    Clipboard.SetText(item.Content);
-                TextBar1.Clear();
+                try
+                {
+                    DropDownItem item = new DropDownItem();
+                    item = (DropDownItem)ListView1.SelectedItem;
+                    if (!item.Option.Equals(""))
+                        Clipboard.SetDataObject(item.Content);
+                    TextBar1.Clear();
+                }
+                catch (Exception ex)
+                {
+                    
+                }
             }
             else if (e.Key == Key.Return && !ListView1.Items.IsEmpty && mode == "app")
             {
@@ -468,6 +520,10 @@ namespace AppLauncher
                 }
             }
             else if (e.Key == Key.Up && ListView1.SelectedItem == ListView1.Items[0])
+            {
+                TextBar1.Focus();
+            }
+            else if(e.Key!=Key.Up && e.Key !=Key.Down)
             {
                 TextBar1.Focus();
             }
