@@ -92,7 +92,7 @@ namespace Curt.shared
            {
                if (progress != null)
                {
-                   progress.Report(count / locations.Count);
+                   progress.Report(count / (locations.Count + 2));
                }
                tmp = TraverseTree(d.Path, d.Levels);
                if (tmp != null)

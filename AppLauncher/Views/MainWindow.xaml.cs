@@ -38,11 +38,12 @@ namespace AppLauncher
 
         public MainWindow()
         {
-            //check in comment
             InitializeComponent();
             WindowWatcher.AddWindow(this);
-            WatcherWrapper fileSystemWatcher = new WatcherWrapper("c:\\");
-            fileTable = FileSearch.GetFilesFromDB("FilesDatabase.sqlite");
+            //not ready yet////////////////////
+            //WatcherWrapper fileSystemWatcher = new WatcherWrapper("c:\\");
+            ///////////////////////////////////
+            fileTable = FileSearch.GetFilesFromDB("FilesData.sqlite");
 
             Start();
             updateFlag = true ;
@@ -226,14 +227,39 @@ namespace AppLauncher
 
         private async Task<List<DropDownItem>> FileSearcher(string text)
         {
-            mode = "file";
+            mode = "file"; 
             List<DropDownItem> searchList = new List<DropDownItem>();
-            var filesFound = fileTable.Where(x => x.Key.ToLower().Contains(text.ToLower())).Take(10);
-            foreach (var f in filesFound)
+            try
             {
+                var filesFound = fileTable.Where(x => x.Key.ToLower().Contains(text.ToLower()) && x.Key.ToLower().StartsWith(text.ToLower())).Take(10);
+                try
+                {
+                    foreach (var f in filesFound)
+                    {
+                        try
+                        {
+                            foreach (var f2 in f.ToList())
+                            {
+                                searchList.Add(new DropDownItem { Path = f2, Content = f.Key });
 
-                searchList.Add(new DropDownItem { Path = f.Key, Content = f.Key });
+                            }
+                        }
+                        catch (Exception exc)
+                        {
+                            System.Windows.MessageBox.Show("error in inner: " + exc.Message);
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    System.Windows.MessageBox.Show("error in outer: " + ex.Message);
+                }
             }
+            catch (Exception e)
+            {
+                System.Windows.MessageBox.Show("error in filesearcher: " + e.Message);
+            }
+            
             return searchList;
         }
 
@@ -284,9 +310,16 @@ namespace AppLauncher
                 {
                     dropDownList = await WebSearch(text);
                     ////////////
-                    if (text.StartsWith("find ")&& text.Length>5)
+                    try
                     {
-                        dropDownList = await Task.Run(() => FileSearcher(text.Substring(5, text.Length - 5)));
+                        if (text.StartsWith("find ") && text.Length > 5)
+                        {
+                            dropDownList = await Task.Run(() => FileSearcher(text.Substring(5, text.Length - 5)));
+                        }
+                    }
+                    catch (Exception excep)
+                    {
+                        System.Windows.MessageBox.Show(excep.Message);
                     }
                     //////////////
                     ListView1.Items.Clear();
@@ -348,10 +381,12 @@ namespace AppLauncher
 
         private void ListView1_MouseDoubleClick(object sender, MouseButtonEventArgs e)
         {
+            if(mode.Equals("Search")||mode.Equals("app")){
             DropDownItem item = new DropDownItem();
             item = (DropDownItem)ListView1.SelectedItem;
             Process.Start(item.Path);
             TextBar1.Clear();
+            }
         }
 
         private void SettingsButton_Click(object sender, RoutedEventArgs e)
@@ -404,6 +439,21 @@ namespace AppLauncher
                 TextBar1.Clear();
             }
             else if (e.Key == Key.Return && !ListView1.Items.IsEmpty && mode == "app")
+            {
+                try
+                {
+                    DropDownItem item = new DropDownItem();
+                    item = (DropDownItem)ListView1.SelectedItem;
+                    Process.Start(item.Path);
+                    TextBar1.Clear();
+                }
+                catch (Exception ex)
+                {
+
+                }
+            
+            }
+            else if (e.Key == Key.Return && !ListView1.Items.IsEmpty && mode == "file")
             {
                 try
                 {
