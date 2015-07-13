@@ -16,6 +16,7 @@ using Curt.shared;
 using System.Configuration;
 using Curt.shared.Models;
 using AppLauncher.Models;
+using System.Drawing;
 
 namespace AppLauncher
 {
@@ -35,18 +36,19 @@ namespace AppLauncher
         bool updateFlag;
         int tickCount;
         ILookup<string, string> fileTable;
+        Dictionary<string, BitmapSource> filesIcons;
 
         public MainWindow()
         {
             InitializeComponent();
             WindowWatcher.AddWindow(this);
             //not ready yet////////////////////
-            WatcherWrapper fileSystemWatcher = new WatcherWrapper("c:\\");
+            ExecutableWatcher fileSystemWatcher = new ExecutableWatcher("c:\\");
             ///////////////////////////////////
-            fileTable = FileSearch.GetFilesFromDB("FilesData.sqlite");
+            fileTable = FileSearch.GetFilesFromDB(AppDomain.CurrentDomain.BaseDirectory + "FilesData.sqlite");
 
             Start();
-            updateFlag = true ;
+            updateFlag = true;
             timerFlag = false;
             timer.Interval = TimeSpan.FromMinutes(5);
             timer.Tick += timer_Tick;
@@ -72,20 +74,25 @@ namespace AppLauncher
             FileWriteRead fileObject = new FileWriteRead();
             if (software.Contains(executable))
             {
-                software.Remove(executable);           
+                software.Remove(executable);
                 fileObject.ReWriteFile(software);
             }
             else
             {
-               var index = software.FindIndex(x => x.Name.Equals(executable.Name) && x.Location.Equals(executable.Location));
-               if (index >= 0)
-               {
-                  software.Remove(software.ElementAt(index));
-                   fileObject.ReWriteFile(software);
-               }
-            }            
+                var index = software.FindIndex(x => x.Name.Equals(executable.Name) && x.Location.Equals(executable.Location));
+                if (index >= 0)
+                {
+                    software.Remove(software.ElementAt(index));
+                    fileObject.ReWriteFile(software);
+                }
+            }
         }
-        
+        public void AddToFilesList(FileItem f)
+        {
+
+        }
+
+
         private async Task<string> Start()
         {
             SharedHelper.KillProcess("CurtInstaller");
@@ -99,12 +106,10 @@ namespace AppLauncher
             HotKey _hotKey = new HotKey(key, keyMod, OnHotKeyHandler);
             Startup.SetStartup();
             FileWriteRead fileObject = new FileWriteRead();
-            software = await Task.Run(() => fileObject.FileDeserialization());    
-    
+            software = await Task.Run(() => fileObject.FileDeserialization());
+            filesIcons = new Dictionary<string, BitmapSource>();
             return "";
         }
-
-
         private void timer_Tick(object sender, EventArgs e)
         {
             if (Convert.ToBoolean(ConfigurationManager.AppSettings["AutoUpdatesEnabled"]))
@@ -119,7 +124,6 @@ namespace AppLauncher
                 }
             }
         }
-
         private async Task<string> CheckVersion()
         {
             try
@@ -132,11 +136,47 @@ namespace AppLauncher
             }
             catch (Exception e)
             {
-               
+
             }
             return "";
         }
-
+        private void StartSelectedApp()
+        {
+            DropDownItem item = new DropDownItem();
+            item = (DropDownItem)ListView1.SelectedItem;
+            try
+            {
+                Process.Start(item.Path);
+                TextBar1.Clear();
+            }
+            catch (Exception ex)
+            {
+                var folderPath = item.Path.Substring(0, item.Path.LastIndexOf("\\"));
+                Process.Start("explorer.exe", folderPath);
+            }
+        }
+        private void StartSelectedFile()
+        {
+            DropDownItem item = new DropDownItem();
+            item = (DropDownItem)ListView1.SelectedItem;
+            try
+            {
+                Process.Start(item.Path);
+            }
+            catch (Exception ex)
+            {
+                var folderPath = item.Path.Substring(0, item.Path.LastIndexOf("\\"));
+                Process.Start("explorer.exe", folderPath);
+            }
+            TextBar1.Clear();
+        }
+        private void StartSelectedSearch()
+        {
+            DropDownItem item = new DropDownItem();
+            item = (DropDownItem)ListView1.SelectedItem;
+            Process.Start(item.Path + item.Content);
+            TextBar1.Clear();
+        }
 
         #region OperatingModes
         private async Task<List<DropDownItem>> AppSearch(string text)
@@ -156,7 +196,7 @@ namespace AppLauncher
                         if (!Dispatcher.CheckAccess())
                         {
                             Dispatcher.Invoke(() => ContentColumn.Width = 200, DispatcherPriority.Normal);
-                            Dispatcher.Invoke(() =>OptionColumn.Width = 350, DispatcherPriority.Normal);
+                            Dispatcher.Invoke(() => OptionColumn.Width = 350, DispatcherPriority.Normal);
 
                         }
                         else
@@ -175,6 +215,7 @@ namespace AppLauncher
             searchList.Sort();
             return searchList;
         }
+        
 
         private async Task<string> Calculator(string text)
         {
@@ -211,7 +252,7 @@ namespace AppLauncher
                                 //sets cursor
                                 TextBar1.Select(TextBar1.Text.Length, 0);
                             }
-                            
+
                         }
                     }
                     catch (Exception ex)
@@ -242,7 +283,7 @@ namespace AppLauncher
                     OptionColumn.Width = 250;
                 }
                 Uri imageUri = new Uri(@"..\Content\goog.ico", UriKind.Relative);
-                BitmapImage imageBitmap = new BitmapImage(imageUri);                 
+                BitmapImage imageBitmap = new BitmapImage(imageUri);
                 searchList.Add(new DropDownItem { Content = text, Path = "https://www.google.com/#q=", ImgSrc = imageBitmap });
                 //imageBitmap.Freeze();
                 imageUri = new Uri(@"..\Content\stack.png", UriKind.Relative);
@@ -262,69 +303,60 @@ namespace AppLauncher
         {
             mode = "file"; 
             List<DropDownItem> searchList = new List<DropDownItem>();
-            try
-            {
-                var filesFound = fileTable.Where(x => x.Key.ToLower().Contains(text.ToLower()) && x.Key.ToLower().StartsWith(text.ToLower())).Take(10);
-                try
-                {
-                    foreach (var f in filesFound)
+            
+                var filesFound = fileTable.Where(x => x.Key.ToLower().Contains(text.ToLower()) && x.Key.ToLower().StartsWith(text.ToLower())).Take(6);
+               	object aLock = new object();
+                    foreach(var f in filesFound)
                     {
-                        try
+                        foreach (var f2 in f.ToList())
                         {
-                            foreach (var f2 in f.ToList())
-                            {
-                                searchList.Add(new DropDownItem { Path = f2, Content = f.Key, Option = f2 });
-
+                            if(!filesIcons.ContainsKey(f2.Split('.').Last())){
+                                Icon ico = System.Drawing.Icon.ExtractAssociatedIcon(f2);
+                                var img = System.Windows.Interop.Imaging.CreateBitmapSourceFromHIcon(ico.Handle, System.Windows.Int32Rect.Empty, System.Windows.Media.Imaging.BitmapSizeOptions.FromEmptyOptions());
+                                img.Freeze();
+                                filesIcons.Add(f2.Split('.').Last(),img);
                             }
-                        }
-                        catch (Exception exc)
-                        {
-                            System.Windows.MessageBox.Show("error in inner: " + exc.Message);
-                        }
+                           
+                            searchList.Add(new DropDownItem { Path = f2, Content = f.Key, Option = f2, ImgSrc = filesIcons[f2.Split('.').Last()] });
+                        }                      
                     }
                      if (!Dispatcher.CheckAccess())
                         {
                             Dispatcher.Invoke(() => ContentColumn.Width = 200, DispatcherPriority.Normal);
                             Dispatcher.Invoke(() =>OptionColumn.Width = 350, DispatcherPriority.Normal);
-
                         }
                         else
                         {
-                            ContentColumn.Width = 200;
+                            ContentColumn.Width = 200; 
                             OptionColumn.Width = 350;
-                        }
-                }
-                catch (Exception ex)
-                {
-                    System.Windows.MessageBox.Show("error in outer: " + ex.Message);
-                }
-            }
-            catch (Exception e)
-            {
-                System.Windows.MessageBox.Show("error in filesearcher: " + e.Message);
-            }
-            
+                        }                         
             return searchList;
         }
 
+        private void DropDownAdd(DropDownItem item)
+        {
+            this.ListView1.Items.Add(item);
+            ListView1.SelectedItem = ListView1.Items[0];
+            ListView1.Visibility = Visibility.Visible;
+        }
 
         #endregion
 
         #region UI
         private async void TextBar1_TextChanged(object sender, TextChangedEventArgs e)
         {
-           
+
 
             String text = TextBar1.Text;
-            
+
             if (string.IsNullOrEmpty(text))
             {
                 ListView1.Items.Clear();
                 ListView1.Visibility = Visibility.Hidden;
                 this.Height = 95;
             }
-            
-            dropDownList = await Task.Run(()=> AppSearch(text));
+
+            dropDownList = await Task.Run(() => AppSearch(text));
             mode = "app";
             ListView1.Items.Clear();
             if (dropDownList != null && dropDownList.Count > 0)
@@ -336,12 +368,12 @@ namespace AppLauncher
             }
             else
             {
-                text = await Task.Run(()=> Calculator(text));
+                text = await Task.Run(() => Calculator(text));
                 if (mode == "calc")
-                {                                   
-                        ContentColumn.Width = 300;
-                        OptionColumn.Width = 250;
-                    
+                {
+                    ContentColumn.Width = 300;
+                    OptionColumn.Width = 250;
+
                     Uri imageUri = new Uri(@"..\Content\calc.ico", UriKind.Relative);
                     BitmapImage imageBitmap = new BitmapImage(imageUri);
                     DropDownItem item = new DropDownItem { Content = text, Option = "Copy with enter", ImgSrc = imageBitmap };
@@ -356,7 +388,6 @@ namespace AppLauncher
                     ////////////
                     try
                     {
-                        
                         if (text.StartsWith("find ") && text.Length > 5)
                         {
                             dropDownList = await Task.Run(() => FileSearcher(text.Substring(5, text.Length - 5)));
@@ -364,7 +395,7 @@ namespace AppLauncher
                     }
                     catch (Exception excep)
                     {
-                        System.Windows.MessageBox.Show(excep.Message);
+                        //System.Windows.MessageBox.Show(excep.Message);
                     }
                     //////////////
                     ListView1.Items.Clear();
@@ -376,7 +407,7 @@ namespace AppLauncher
                         }
                     }
                 }
-                
+
             }
             if (string.IsNullOrEmpty(text))
             {
@@ -385,25 +416,25 @@ namespace AppLauncher
                 this.Height = 95;
             }
             this.Height = 95 + (ListView1.Items.Count * 40);
-            
+
         }
 
         private void TextBar1_PreviewKeyDown(object sender, KeyEventArgs e)
         {
-            
+
             if (e.Key == Key.Return && !ListView1.Items.IsEmpty)
             {
                 ListView1_PreviewKeyDown(sender, e);
             }
             else if (e.Key == Key.Down && !ListView1.Items.IsEmpty)
             {
-                ListView1.UpdateLayout();             
+                ListView1.UpdateLayout();
                 ListViewItem item = ListView1.ItemContainerGenerator.ContainerFromIndex(ListView1.SelectedIndex) as ListViewItem;
                 item.IsSelected = true;
                 Keyboard.Focus(item);
-                
+
             }
-           
+
         }
 
         private void Window_Deactivated(object sender, EventArgs e)
@@ -417,20 +448,19 @@ namespace AppLauncher
                 this.DragMove();
         }
 
-        private void DropDownAdd(DropDownItem item)
-        {
-            this.ListView1.Items.Add(item);
-            ListView1.SelectedItem = ListView1.Items[0];
-            ListView1.Visibility = Visibility.Visible;
-        }
-
         private void ListView1_MouseDoubleClick(object sender, MouseButtonEventArgs e)
         {
-            if(mode.Equals("Search")||mode.Equals("app")||mode.Equals("file")){
-            DropDownItem item = new DropDownItem();
-            item = (DropDownItem)ListView1.SelectedItem;
-            Process.Start(item.Path);
-            TextBar1.Clear();
+            if (mode.Equals("search"))
+            {
+                StartSelectedSearch();
+            }
+            else if (mode.Equals("app"))
+            {
+                StartSelectedApp();
+            }
+            else if (mode.Equals("file"))
+            {
+                StartSelectedFile();
             }
         }
 
@@ -443,13 +473,20 @@ namespace AppLauncher
 
         private void OnHotKeyHandler(HotKey hotKey)
         {
-            this.Visibility = Visibility.Visible;
-            Application.Current.MainWindow.Focus();
-            this.Focus();
-            ListView1.Focus();
-            TextBar1.Focus();
-            Keyboard.Focus(TextBar1);
-            this.Activate();
+            if (this.Visibility == Visibility.Hidden)
+            {
+                this.Visibility = Visibility.Visible;
+                Application.Current.MainWindow.Focus();
+                this.Focus();
+                ListView1.Focus();
+                TextBar1.Focus();
+                Keyboard.Focus(TextBar1);
+                this.Activate();
+            }
+            else
+            {
+                this.Visibility = Visibility.Hidden;
+            }
         }
 
         private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
@@ -470,10 +507,7 @@ namespace AppLauncher
         {
             if (e.Key == Key.Return && !ListView1.Items.IsEmpty && mode == "search")
             {
-                DropDownItem item = new DropDownItem();
-                item = (DropDownItem)ListView1.SelectedItem;
-                Process.Start(item.Path + item.Content);
-                TextBar1.Clear();
+                StartSelectedSearch();
             }
             else if (e.Key == Key.Return && !ListView1.Items.IsEmpty && mode == "calc")
             {
@@ -487,52 +521,31 @@ namespace AppLauncher
                 }
                 catch (Exception ex)
                 {
-                    
+
                 }
             }
             else if (e.Key == Key.Return && !ListView1.Items.IsEmpty && mode == "app")
             {
-                try
-                {
-                    DropDownItem item = new DropDownItem();
-                    item = (DropDownItem)ListView1.SelectedItem;
-                    Process.Start(item.Path);
-                    TextBar1.Clear();
-                }
-                catch (Exception ex)
-                {
+                StartSelectedApp();
 
-                }
-            
             }
             else if (e.Key == Key.Return && !ListView1.Items.IsEmpty && mode == "file")
             {
-                try
-                {
-                    DropDownItem item = new DropDownItem();
-                    item = (DropDownItem)ListView1.SelectedItem;
-                    Process.Start(item.Path);
-                    TextBar1.Clear();
-                }
-                catch (Exception ex)
-                {
-
-                }
+                StartSelectedFile();
             }
             else if (e.Key == Key.Up && ListView1.SelectedItem == ListView1.Items[0])
             {
                 TextBar1.Focus();
             }
-            else if(e.Key!=Key.Up && e.Key !=Key.Down)
+            else if (e.Key != Key.Up && e.Key != Key.Down)
             {
                 TextBar1.Focus();
             }
-            
-        }
-      
 
-      
+        }
         #endregion
+
+
     }
 }
 

@@ -93,6 +93,7 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="Services\Configurer.cs" />
+    <Compile Include="Services\FileWatcher.cs" />
     <Compile Include="Services\VersionCheck.cs" />
     <Compile Include="Services\WindowWatcher.cs" />
     <Compile Include="Views\SettingsWindow.xaml.cs">
@@ -118,7 +119,7 @@
     </Page>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Services\WatcherWrapper.cs" />
+    <Compile Include="Services\ExecutableWatcher.cs" />
     <Compile Include="Properties\AssemblyInfo.cs">
       <SubType>Code</SubType>
     </Compile>
