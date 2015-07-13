@@ -15,14 +15,14 @@ namespace Curt.shared
         public async Task<bool> WriteFile(List<DirSearchItem> locations, string locationToWrite,System.IProgress<double> progressIndicator)
         {
               
-            Task<List<Executable>> software = Task.Run(()=>Startup.GetInstalledSoftware(locations,progressIndicator));
-            var thing = await software;
-            using (var file = File.OpenWrite(locationToWrite + "//AppLauncher//AppLauncher//InstalledSoftware.bin"))
-            {
-                file.Position = file.Length;
-                Serializer.Serialize<List<Executable>>(file, thing);
-                file.Dispose();
-            }
+            //Task<List<Executable>> software = Task.Run(()=>Startup.GetInstalledSoftware(locations,progressIndicator));
+            //var thing = await software;
+            //using (var file = File.OpenWrite(locationToWrite + "//AppLauncher//AppLauncher//InstalledSoftware.bin"))
+            //{
+            //    file.Position = file.Length;
+            //    Serializer.Serialize<List<Executable>>(file, thing);
+            //    file.Dispose();
+            //}
             return true;
         }
 
