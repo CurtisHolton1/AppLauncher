@@ -18,6 +18,7 @@ namespace AppLauncher
         public string Option { get; set; }
         public string Path { get; set; }
         public DateTime LastUsed { get; set; }
+        public int TotalTimesUsed { get; set; }
         public int CompareTo(DropDownItem other)
         {
             if (LastUsed.CompareTo(other.LastUsed) < 0)

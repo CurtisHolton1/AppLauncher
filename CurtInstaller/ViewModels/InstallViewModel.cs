@@ -32,17 +32,17 @@ namespace CurtInstaller.ViewModels
                     model.Location = System.IO.Directory.GetParent(model.Location).FullName;
                     model.Location = System.IO.Directory.GetParent(model.Location).FullName;  
                 }
-                else if (!string.IsNullOrEmpty(StartupMode) && StartupMode.Equals("WriteFile"))
-                {
-                    model.Location = System.IO.Path.GetDirectoryName(System.Windows.Forms.Application.ExecutablePath);
-                    model.Location = System.IO.Directory.GetParent(model.Location).FullName;
-                    model.Location = System.IO.Directory.GetParent(model.Location).FullName;  
-                    FileWriteRead fileObject = new FileWriteRead();
-                    await fileObject.WriteFile(Startup.GetInitialLocations(),model.Location, progressIndicator);
-                    model.StartLauncher();
-                    System.Environment.Exit(0); 
-                    return "";
-                }
+                //else if (!string.IsNullOrEmpty(StartupMode) && StartupMode.Equals("WriteFile"))
+                //{
+                //    model.Location = System.IO.Path.GetDirectoryName(System.Windows.Forms.Application.ExecutablePath);
+                //    model.Location = System.IO.Directory.GetParent(model.Location).FullName;
+                //    model.Location = System.IO.Directory.GetParent(model.Location).FullName;  
+                //    //FileWriteRead fileObject = new FileWriteRead();
+                //    //await fileObject.WriteFile(Startup.GetInitialLocations(),model.Location, progressIndicator);
+                //    model.StartLauncher();
+                //    System.Environment.Exit(0); 
+                //    return "";
+                //}
                 var success = await Task.Run(()=> model.Download(StartupMode));
                 //////////////////////////////////////
                // success = false;
@@ -51,8 +51,8 @@ namespace CurtInstaller.ViewModels
                 {
                     if (string.IsNullOrEmpty(StartupMode)) //install mode
                     {
-                        FileWriteRead fileObject = new FileWriteRead();
-                        await fileObject.WriteFile(Startup.GetInitialLocations(), model.Location, progressIndicator);
+                        //FileWriteRead fileObject = new FileWriteRead();
+                       // await fileObject.WriteFile(Startup.GetInitialLocations(), model.Location, progressIndicator);
                         await Task.Run(() => FileSearch.CreateFilesDatabase(model.Location + "\\AppLauncher\\AppLauncher", "FilesData.sqlite", progressIndicator, true));
                       
                     }           

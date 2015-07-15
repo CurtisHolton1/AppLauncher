@@ -75,8 +75,6 @@
     <Compile Include="Models\FileItem.cs" />
     <Compile Include="SharedHelper.cs" />
     <Compile Include="Models\DirSearchItem.cs" />
-    <Compile Include="Models\Executable.cs" />
-    <Compile Include="FileWriteRead.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Startup.cs" />
   </ItemGroup>
