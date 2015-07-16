@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Curt.shared.Models;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing;
@@ -9,7 +10,7 @@ using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 
-namespace AppLauncher
+namespace AppLauncher.Models
 {
     public class DropDownItem : IComparable<DropDownItem>
     {
@@ -32,5 +33,6 @@ namespace AppLauncher
             else
                 return 0;
         }
+     
     }
 }

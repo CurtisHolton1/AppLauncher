@@ -44,63 +44,25 @@ namespace AppLauncher
             InitializeComponent();
             WindowWatcher.AddWindow(this);
             //not ready yet////////////////////
-            ExecutableWatcher fileSystemWatcher = new ExecutableWatcher("c:\\");
+            //ExecutableWatcher fileSystemWatcher = new ExecutableWatcher("c:\\");
             ///////////////////////////////////
             //fileTable = FileSearch.GetFilesFromDB(AppDomain.CurrentDomain.BaseDirectory + "FilesData.sqlite");
-             //allFiles = FileSearch.GetAllFromDB(AppDomain.CurrentDomain.BaseDirectory + "FilesData.sqlite");
+             //allFiles = DatabaseManager.GetAllFromDB(AppDomain.CurrentDomain.BaseDirectory + "FilesData.sqlite");
             Start();
             updateFlag = true;
             timerFlag = false;
-            timer.Interval = TimeSpan.FromMinutes(5);
+            timer.Interval = TimeSpan.FromMinutes(30);
             timer.Tick += timer_Tick;
             timer.Start();
         }
-
-        //public void AddToSoftware(Executable executable)
-        //{
-        //    if (!software.Contains(executable))
-        //    {
-        //        var index = software.FindIndex(f => f.Name.Equals(char.ToUpper(executable.Name[0]) + executable.Name.Substring(1)));
-        //        if (index < 0)
-        //        {
-        //            software.Add(executable);
-        //            FileWriteRead fileObject = new FileWriteRead();
-        //            fileObject.ReWriteFile(software);
-        //        }
-        //    }
-        //}
-
-        //public void RemoveFromSoftware(Executable executable)
-        //{
-        //    FileWriteRead fileObject = new FileWriteRead();
-        //    if (software.Contains(executable))
-        //    {
-        //        software.Remove(executable);
-        //        fileObject.ReWriteFile(software);
-        //    }
-        //    else
-        //    {
-        //        var index = software.FindIndex(x => x.Name.Equals(executable.Name) && x.Location.Equals(executable.Location));
-        //        if (index >= 0)
-        //        {
-        //            software.Remove(software.ElementAt(index));
-        //            fileObject.ReWriteFile(software);
-        //        }
-        //    }
-        //}
-        public void AddToFilesList(FileItem f)
-        {
-
-        }
-
+      
 
         private async Task<string> Start()
         {
             //SharedHelper.KillProcess("CurtInstaller");
             SharedHelper.DeleteDirectory(AppDomain.CurrentDomain.BaseDirectory + "..\\..\\tmp");
-            software = await Task.Run(()=> FileSearch.GetExecutables(AppDomain.CurrentDomain.BaseDirectory + "FilesData.sqlite"));
-            allFiles = await Task.Run(()=>FileSearch.GetFiles(AppDomain.CurrentDomain.BaseDirectory + "FilesData.sqlite"));
-            
+            software = await Task.Run(()=> DatabaseManager.GetExecutables(AppDomain.CurrentDomain.BaseDirectory + "FilesData.sqlite"));
+            allFiles = await Task.Run(()=>DatabaseManager.GetFiles(AppDomain.CurrentDomain.BaseDirectory + "FilesData.sqlite"));           
             TextBar1.Focus();
             //Startup.RemoveStartup();
             Key key;
@@ -115,20 +77,22 @@ namespace AppLauncher
             filesIcons = new Dictionary<string, BitmapSource>();
             return "";
         }
-        private void timer_Tick(object sender, EventArgs e)
+        private async void timer_Tick(object sender, EventArgs e)
         {
+          await Task.Run(()=>  DatabaseManager.ReWriteDatabase(AppDomain.CurrentDomain.BaseDirectory, "FilesData.sqlite", software, allFiles));
             if (Convert.ToBoolean(ConfigurationManager.AppSettings["AutoUpdatesEnabled"]))
             {
                 tickCount++;
                 if (updateFlag)
                     timerFlag = true;
-                else if (tickCount >= 288)//24 hours
+                else if (tickCount >= 48)//24 hours
                 {
                     tickCount = 0;
                     updateFlag = true;
                 }
             }
         }
+        //if the timer update flag has been set, will be called on window open
         private async Task<string> CheckVersion()
         {
             try
@@ -149,9 +113,17 @@ namespace AppLauncher
         {
             DropDownItem item = new DropDownItem();
             item = (DropDownItem)ListView1.SelectedItem;
+            
             try
             {
-                Process.Start(item.Path);
+                if (SharedHelper.BringProcessToFront(item.Content.Substring(0, item.Content.LastIndexOf('.')), item.Path))
+                {
+                    this.Hide();
+                }
+                else
+                {
+                    Process.Start(item.Path);
+                }
                 TextBar1.Clear();
             }
             catch (Exception ex)
@@ -159,7 +131,14 @@ namespace AppLauncher
                 var folderPath = item.Path.Substring(0, item.Path.LastIndexOf("\\"));
                 Process.Start("explorer.exe", folderPath);
             }
+
+            var i = software.First(x => x.FileLocation.Equals(item.Path) && x.FileName.Equals(item.Content));
+            i.LastUsed = DateTime.Now;
+            i.TotalUsed++;
+            TextBar1.Clear();
         }
+      
+
         private void StartSelectedFile()
         {
             DropDownItem item = new DropDownItem();
@@ -173,6 +152,9 @@ namespace AppLauncher
                 var folderPath = item.Path.Substring(0, item.Path.LastIndexOf("\\"));
                 Process.Start("explorer.exe", folderPath);
             }
+            var i = allFiles.First(x => x.FileLocation.Equals(item.Path) && x.FileName.Equals(item.Content));
+            i.LastUsed = DateTime.Now;
+            i.TotalUsed++;         
             TextBar1.Clear();
         }
         private void StartSelectedSearch()
@@ -182,6 +164,57 @@ namespace AppLauncher
             Process.Start(item.Path + item.Content);
             TextBar1.Clear();
         }
+
+        private List<DropDownItem> Search(string text, int type)
+        {
+            List<DropDownItem> items = new List<DropDownItem>();
+            if (type == 0)
+            {
+                var files = software.AsParallel().OrderByDescending(x => x.TotalUsed).Where(x => x.FileName.ToLower().Contains(text.ToLower()) && x.FileName.ToLower().StartsWith(text.ToLower())).Take(10).ToList();
+                for (int i = 0; i < files.Count; i++)
+                {
+                    var f = files[i];
+                    if (File.Exists(f.FileLocation))
+                    {
+                        Icon ico = System.Drawing.Icon.ExtractAssociatedIcon(f.FileLocation);
+                        var img = System.Windows.Interop.Imaging.CreateBitmapSourceFromHIcon(ico.Handle, System.Windows.Int32Rect.Empty, System.Windows.Media.Imaging.BitmapSizeOptions.FromEmptyOptions());
+                        img.Freeze();
+                        items.Add(new DropDownItem { Content = f.FileName, Path = f.FileLocation, Option = f.FileLocation, ImgSrc = img });
+                    }
+                    else
+                    {
+                        software.Remove(software.FirstOrDefault(x => x.FileLocation.Equals(f.FileLocation)));
+                        i--;
+                    }
+                }
+            }
+            else if (type == 1)
+            {
+                var files = allFiles.AsParallel().OrderByDescending(x => x.TotalUsed).Where(x => x.FileName.ToLower().Contains(text.ToLower()) && x.FileName.ToLower().StartsWith(text.ToLower())).Take(10).ToList();
+                for (int i = 0; i < files.Count; i++)
+                {
+                    var f = files[i];
+                    if (File.Exists(f.FileLocation))
+                    {
+                        if (!filesIcons.ContainsKey(f.Extension))
+                        {
+                            Icon ico = System.Drawing.Icon.ExtractAssociatedIcon(f.FileLocation);
+                            var img = System.Windows.Interop.Imaging.CreateBitmapSourceFromHIcon(ico.Handle, System.Windows.Int32Rect.Empty, System.Windows.Media.Imaging.BitmapSizeOptions.FromEmptyOptions());
+                            img.Freeze();
+                            filesIcons.Add(f.Extension, img);
+                        }
+                        items.Add(new DropDownItem { Content = f.FileName, Path = f.FileLocation, Option = f.FileLocation, ImgSrc = filesIcons[f.Extension], TotalTimesUsed = f.TotalUsed, LastUsed = f.LastUsed });
+                    }
+                    else
+                    {
+                        allFiles.Remove(allFiles.FirstOrDefault(x => x.FileLocation.Equals(f.FileLocation)));
+                        i--;
+                    }
+                }
+            }
+            return new List<DropDownItem>(items.Take(6));
+        }
+
 
         #region OperatingModes
         private async Task<List<DropDownItem>> AppSearch(string text)
@@ -310,25 +343,7 @@ namespace AppLauncher
         private async Task<List<DropDownItem>> FileSearcher(string text)
         {
             mode = "file"; 
-            List<DropDownItem> searchList = new List<DropDownItem>();
-            
-                //var filesFound = fileTable.Where(x => x.Key.ToLower().Contains(text.ToLower()) && x.Key.ToLower().StartsWith(text.ToLower())).Take(6);
-               	//object aLock = new object();
-                    //foreach(var f in filesFound)
-                    //{
-                    //    foreach (var f2 in f.ToList())
-                    //    {
-                    //       // if(!filesIcons.ContainsKey(f2.Split('.').Last())){
-                    //            Icon ico = System.Drawing.Icon.ExtractAssociatedIcon(f2);
-                    //            var img = System.Windows.Interop.Imaging.CreateBitmapSourceFromHIcon(ico.Handle, System.Windows.Int32Rect.Empty, System.Windows.Media.Imaging.BitmapSizeOptions.FromEmptyOptions());
-                    //            img.Freeze();
-                    //            //filesIcons.Add(f2.Split('.').Last(),img);
-                    //        //}
-                           
-                    //        searchList.Add(new DropDownItem { Path = f2, Content = f.Key, Option = f2, ImgSrc = filesIcons[f2.Split('.').Last()]  });
-                    //    }                      
-                      //}
-
+            List<DropDownItem> searchList = new List<DropDownItem>();                   
             searchList = Search(text, 1);
                      if (!Dispatcher.CheckAccess())
                         {
@@ -343,84 +358,7 @@ namespace AppLauncher
             return searchList;
         }
 
-        private List<DropDownItem> Search(string text, int type) 
-        {
-            List<DropDownItem> items = new List<DropDownItem>();
-            if (type == 0)
-            {
-                var files = software.AsParallel().Where(x => x.FileName.ToLower().Contains(text.ToLower())).Take(10).ToList();
-               for (int i = 0; i < files.Count; i++ )
-               {
-                   var f = files[i];
-                   if (File.Exists(f.FileLocation))
-                   {
-                       Icon ico = System.Drawing.Icon.ExtractAssociatedIcon(f.FileLocation);
-                       var img = System.Windows.Interop.Imaging.CreateBitmapSourceFromHIcon(ico.Handle, System.Windows.Int32Rect.Empty, System.Windows.Media.Imaging.BitmapSizeOptions.FromEmptyOptions());
-                       img.Freeze();
-                       items.Add(new DropDownItem { Content = f.FileName, Path = f.FileLocation, Option = f.FileLocation, ImgSrc = img });
-                   }
-                   else
-                   {
-                       software.Remove(software.FirstOrDefault(x => x.FileLocation.Equals(f.FileLocation)));
-                       i--;
-                   }
-               }
-            }
-            else if (type == 1)
-            {
-                var files = allFiles.AsParallel().Where(x => x.FileName.ToLower().Contains(text.ToLower())).Take(10).ToList();
-                for (int i = 0; i < files.Count; i++)
-                {
-                    var f = files[i];
-                    if (File.Exists(f.FileLocation))
-                    {
-                        if (!filesIcons.ContainsKey(f.Extension))
-                        {
-                            Icon ico = System.Drawing.Icon.ExtractAssociatedIcon(f.FileLocation);
-                            var img = System.Windows.Interop.Imaging.CreateBitmapSourceFromHIcon(ico.Handle, System.Windows.Int32Rect.Empty, System.Windows.Media.Imaging.BitmapSizeOptions.FromEmptyOptions());
-                            img.Freeze();
-                            filesIcons.Add(f.Extension, img);
-                        }
-                        items.Add(new DropDownItem { Content = f.FileName, Path = f.FileLocation, Option = f.FileLocation, ImgSrc = filesIcons[f.Extension] });
-                    }
-                    else
-                    {
-                        allFiles.Remove(allFiles.FirstOrDefault(x => x.FileLocation.Equals(f.FileLocation)));
-                        i--;
-                    }
-                }
-                //var files = allFiles.Where(x => x.Key.ToLower().Contains(text.ToLower()) && x.Key.ToLower().StartsWith(text.ToLower()) && (x.Where(y=> y.Type==type)).Count() >0);
-
-                //foreach (var f in files)
-                //{
-                //    foreach (var f2 in f)
-                //    {                  
-                //            //if (!filesIcons.ContainsKey(f2.FileLocation.Split('.').Last()))
-                //            //{
-                //            try
-                //            {
-                //                if (File.Exists(f2.FileLocation))
-                //                {
-                //                    //Icon ico = System.Drawing.Icon.ExtractAssociatedIcon(f2.FileLocation);
-                //                    //var img = System.Windows.Interop.Imaging.CreateBitmapSourceFromHIcon(ico.Handle, System.Windows.Int32Rect.Empty, System.Windows.Media.Imaging.BitmapSizeOptions.FromEmptyOptions());
-                //                   // img.Freeze();
-                //                    //filesIcons.Add(f2.FileLocation.Split('.').Last(), img);
-                //                    //}                           
-                //                    f2.TotalUsed++;
-                //                    items.Add(new DropDownItem { Content = f2.FileName, Path = f2.FileLocation,  /*ImgSrc = img,*/ Option = f2.FileLocation, TotalTimesUsed = f2.TotalUsed});
-                //                    var d = f2.TotalUsed;
-                //                }
-                //            }
-                //            catch (Exception e)
-                //            {
-
-                //                Console.WriteLine(e.Message);
-                //            }        
-                //}
-                //}
-            }
-                return new List<DropDownItem>(items.Take(6));
-            }
+        
             
         
         private void DropDownAdd(DropDownItem item)
@@ -487,7 +425,7 @@ namespace AppLauncher
                     }
                     catch (Exception excep)
                     {
-                        System.Windows.MessageBox.Show(excep.Message);
+                         //System.Windows.MessageBox.Show(excep.Message);
                     }
                     //////////////
                     ListView1.Items.Clear();
@@ -559,6 +497,7 @@ namespace AppLauncher
 
         private void SettingsButton_Click(object sender, RoutedEventArgs e)
         {
+          
             Window settingsWin = new SettingsWindow();
             settingsWin.Show();
             this.Visibility = Visibility.Hidden;
