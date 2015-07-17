@@ -14,9 +14,9 @@ using AppLauncher.Services;
 using Curt.shared;
 using System.Configuration;
 using Curt.shared.Models;
-using AppLauncher.Models;
 using System.Drawing;
 using System.IO;
+
 
 namespace AppLauncher
 {
@@ -61,8 +61,8 @@ namespace AppLauncher
         {
             //SharedHelper.KillProcess("CurtInstaller");
             SharedHelper.DeleteDirectory(AppDomain.CurrentDomain.BaseDirectory + "..\\..\\tmp");
-            software = await Task.Run(()=> DatabaseManager.GetExecutables(AppDomain.CurrentDomain.BaseDirectory + "FilesData.sqlite"));
-            allFiles = await Task.Run(()=>DatabaseManager.GetFiles(AppDomain.CurrentDomain.BaseDirectory + "FilesData.sqlite"));           
+            //software = await Task.Run(()=> DatabaseManager.GetExecutables(AppDomain.CurrentDomain.BaseDirectory + "FilesData.sqlite"));
+           // allFiles = await Task.Run(()=>DatabaseManager.GetFiles(AppDomain.CurrentDomain.BaseDirectory + "FilesData.sqlite"));           
             TextBar1.Focus();
             //Startup.RemoveStartup();
             Key key;
@@ -79,7 +79,7 @@ namespace AppLauncher
         }
         private async void timer_Tick(object sender, EventArgs e)
         {
-          await Task.Run(()=>  DatabaseManager.ReWriteDatabase(AppDomain.CurrentDomain.BaseDirectory, "FilesData.sqlite", software, allFiles));
+          //await Task.Run(()=>  DatabaseManager.ReWriteDatabase(AppDomain.CurrentDomain.BaseDirectory, "FilesData.sqlite", software, allFiles));
             if (Convert.ToBoolean(ConfigurationManager.AppSettings["AutoUpdatesEnabled"]))
             {
                 tickCount++;
@@ -131,10 +131,9 @@ namespace AppLauncher
                 var folderPath = item.Path.Substring(0, item.Path.LastIndexOf("\\"));
                 Process.Start("explorer.exe", folderPath);
             }
-
-            var i = software.First(x => x.FileLocation.Equals(item.Path) && x.FileName.Equals(item.Content));
-            i.LastUsed = DateTime.Now;
-            i.TotalUsed++;
+            item.LastUsed = DateTime.Now;
+            item.TotalTimesUsed++;
+            DatabaseManager.UpdateDB(item);
             TextBar1.Clear();
         }
       
@@ -152,9 +151,9 @@ namespace AppLauncher
                 var folderPath = item.Path.Substring(0, item.Path.LastIndexOf("\\"));
                 Process.Start("explorer.exe", folderPath);
             }
-            var i = allFiles.First(x => x.FileLocation.Equals(item.Path) && x.FileName.Equals(item.Content));
-            i.LastUsed = DateTime.Now;
-            i.TotalUsed++;         
+            item.LastUsed = DateTime.Now; 
+            item.TotalTimesUsed++;
+            DatabaseManager.UpdateDB(item);
             TextBar1.Clear();
         }
         private void StartSelectedSearch()
@@ -165,53 +164,63 @@ namespace AppLauncher
             TextBar1.Clear();
         }
 
-        private List<DropDownItem> Search(string text, int type)
+        private async Task<List<DropDownItem>> Search(string text, int type)
         {
             List<DropDownItem> items = new List<DropDownItem>();
-            if (type == 0)
-            {
-                var files = software.AsParallel().OrderByDescending(x => x.TotalUsed).Where(x => x.FileName.ToLower().Contains(text.ToLower()) && x.FileName.ToLower().StartsWith(text.ToLower())).Take(10).ToList();
-                for (int i = 0; i < files.Count; i++)
-                {
-                    var f = files[i];
-                    if (File.Exists(f.FileLocation))
-                    {
-                        Icon ico = System.Drawing.Icon.ExtractAssociatedIcon(f.FileLocation);
-                        var img = System.Windows.Interop.Imaging.CreateBitmapSourceFromHIcon(ico.Handle, System.Windows.Int32Rect.Empty, System.Windows.Media.Imaging.BitmapSizeOptions.FromEmptyOptions());
-                        img.Freeze();
-                        items.Add(new DropDownItem { Content = f.FileName, Path = f.FileLocation, Option = f.FileLocation, ImgSrc = img });
-                    }
-                    else
-                    {
-                        software.Remove(software.FirstOrDefault(x => x.FileLocation.Equals(f.FileLocation)));
-                        i--;
-                    }
-                }
-            }
-            else if (type == 1)
-            {
-                var files = allFiles.AsParallel().OrderByDescending(x => x.TotalUsed).Where(x => x.FileName.ToLower().Contains(text.ToLower()) && x.FileName.ToLower().StartsWith(text.ToLower())).Take(10).ToList();
-                for (int i = 0; i < files.Count; i++)
-                {
-                    var f = files[i];
-                    if (File.Exists(f.FileLocation))
-                    {
-                        if (!filesIcons.ContainsKey(f.Extension))
-                        {
-                            Icon ico = System.Drawing.Icon.ExtractAssociatedIcon(f.FileLocation);
-                            var img = System.Windows.Interop.Imaging.CreateBitmapSourceFromHIcon(ico.Handle, System.Windows.Int32Rect.Empty, System.Windows.Media.Imaging.BitmapSizeOptions.FromEmptyOptions());
-                            img.Freeze();
-                            filesIcons.Add(f.Extension, img);
-                        }
-                        items.Add(new DropDownItem { Content = f.FileName, Path = f.FileLocation, Option = f.FileLocation, ImgSrc = filesIcons[f.Extension], TotalTimesUsed = f.TotalUsed, LastUsed = f.LastUsed });
-                    }
-                    else
-                    {
-                        allFiles.Remove(allFiles.FirstOrDefault(x => x.FileLocation.Equals(f.FileLocation)));
-                        i--;
-                    }
-                }
-            }
+
+            //if (type == 0)
+            //{
+            //    var files = software.AsParallel().OrderByDescending(x => x.TotalUsed).Where(x => x.FileName.ToLower().Contains(text.ToLower()) && x.FileName.ToLower().StartsWith(text.ToLower())).Take(10).ToList();
+            //    for (int i = 0; i < files.Count; i++)
+            //    {
+            //        var f = files[i];
+            //        if (File.Exists(f.FileLocation))
+            //        {
+            //            Icon ico = System.Drawing.Icon.ExtractAssociatedIcon(f.FileLocation);
+            //            var img = System.Windows.Interop.Imaging.CreateBitmapSourceFromHIcon(ico.Handle, System.Windows.Int32Rect.Empty, System.Windows.Media.Imaging.BitmapSizeOptions.FromEmptyOptions());
+            //            img.Freeze();
+            //            items.Add(new DropDownItem { Content = f.FileName, Path = f.FileLocation, Option = f.FileLocation, ImgSrc = img });
+            //        }
+            //        else
+            //        {
+            //            software.Remove(software.FirstOrDefault(x => x.FileLocation.Equals(f.FileLocation)));
+            //            i--;
+            //        }
+            //    }
+            //}
+            //else if (type == 1)
+            //{
+            //    var files = allFiles.AsParallel().OrderByDescending(x => x.TotalUsed).Where(x => x.FileName.ToLower().Contains(text.ToLower()) && x.FileName.ToLower().StartsWith(text.ToLower())).Take(10).ToList();
+            //    for (int i = 0; i < files.Count; i++)
+            //    {
+            //        var f = files[i];
+            //        if (File.Exists(f.FileLocation))
+            //        {
+            //            if (!filesIcons.ContainsKey(f.Extension))
+            //            {
+            //                Icon ico = System.Drawing.Icon.ExtractAssociatedIcon(f.FileLocation);
+            //                var img = System.Windows.Interop.Imaging.CreateBitmapSourceFromHIcon(ico.Handle, System.Windows.Int32Rect.Empty, System.Windows.Media.Imaging.BitmapSizeOptions.FromEmptyOptions());
+            //                img.Freeze();
+            //                filesIcons.Add(f.Extension, img);
+            //            }
+            //            items.Add(new DropDownItem { Content = f.FileName, Path = f.FileLocation, Option = f.FileLocation, ImgSrc = filesIcons[f.Extension], TotalTimesUsed = f.TotalUsed, LastUsed = f.LastUsed });
+            //        }
+            //        else
+            //        {
+            //            allFiles.Remove(allFiles.FirstOrDefault(x => x.FileLocation.Equals(f.FileLocation)));
+            //            i--;
+            //        }
+            //    }
+            //}
+            var all = await Task.Run(()=>DatabaseManager.SelectFromDB(text, type));
+           all = all.OrderByDescending(x => x.TotalUsed).Take(6).ToList();
+           foreach (var f in all)
+           {
+               var content = f.FileName;
+               if (!string.IsNullOrEmpty(f.DisplayName))
+                   content = f.DisplayName;
+               items.Add(new DropDownItem {ID = f.ID, Content = content, Path = f.FileLocation, Option = f.FileLocation, /*ImgSrc = filesIcons[f.Extension],*/ TotalTimesUsed = f.TotalUsed, LastUsed = f.LastUsed });
+           }
             return new List<DropDownItem>(items.Take(6));
         }
 
@@ -254,7 +263,7 @@ namespace AppLauncher
             //return searchList;
 
 
-            return Search(text, 0);
+            return await Search(text, 0);
         }
         
 
@@ -285,7 +294,6 @@ namespace AppLauncher
                             {
                                 Dispatcher.Invoke(() => TextBar1.Text = setString, DispatcherPriority.Normal);
                                 Dispatcher.Invoke(() => TextBar1.Select(TextBar1.Text.Length, 0), DispatcherPriority.Normal);
-
                             }
                             else
                             {
@@ -293,7 +301,6 @@ namespace AppLauncher
                                 //sets cursor
                                 TextBar1.Select(TextBar1.Text.Length, 0);
                             }
-
                         }
                     }
                     catch (Exception ex)
@@ -344,7 +351,7 @@ namespace AppLauncher
         {
             mode = "file"; 
             List<DropDownItem> searchList = new List<DropDownItem>();                   
-            searchList = Search(text, 1);
+            searchList = await Search(text, 1);
                      if (!Dispatcher.CheckAccess())
                         {
                             Dispatcher.Invoke(() => ContentColumn.Width = 200, DispatcherPriority.Normal);

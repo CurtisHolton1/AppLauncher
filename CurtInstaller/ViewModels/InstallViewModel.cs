@@ -51,9 +51,8 @@ namespace CurtInstaller.ViewModels
                 {
                     if (string.IsNullOrEmpty(StartupMode)) //install mode
                     {
-                        //FileWriteRead fileObject = new FileWriteRead();
-                       // await fileObject.WriteFile(Startup.GetInitialLocations(), model.Location, progressIndicator);
-                        await Task.Run(() => FileSearch.CreateFilesDatabase(model.Location + "\\AppLauncher\\AppLauncher", "FilesData.sqlite", progressIndicator, true));
+
+                        await Task.Run(() => DatabaseManager.CreateFilesDatabase(model.Location + "\\AppLauncher\\AppLauncher", "FilesData.sqlite", progressIndicator, true));
                       
                     }           
                 }
