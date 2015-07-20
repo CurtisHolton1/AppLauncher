@@ -61,7 +61,7 @@ namespace Curt.shared
             Process[] processlist = Process.GetProcesses();
             foreach (Process theprocess in processlist)
             {
-                if (theprocess.ProcessName.Equals(process))
+                if (theprocess.ProcessName.ToLower().Equals(process.ToLower()))
                 {
                     ShowWindow(theprocess.MainWindowHandle, SW_RESTORE);
                     if (SetForegroundWindow(theprocess.MainWindowHandle))

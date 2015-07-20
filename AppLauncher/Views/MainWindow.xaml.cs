@@ -43,11 +43,9 @@ namespace AppLauncher
         {
             InitializeComponent();
             WindowWatcher.AddWindow(this);
-            //not ready yet////////////////////
-            //ExecutableWatcher fileSystemWatcher = new ExecutableWatcher("c:\\");
-            ///////////////////////////////////
-            //fileTable = FileSearch.GetFilesFromDB(AppDomain.CurrentDomain.BaseDirectory + "FilesData.sqlite");
-             //allFiles = DatabaseManager.GetAllFromDB(AppDomain.CurrentDomain.BaseDirectory + "FilesData.sqlite");
+
+            FileWatcher watcher = new FileWatcher("C:\\");
+
             Start();
             updateFlag = true;
             timerFlag = false;
@@ -109,7 +107,7 @@ namespace AppLauncher
             }
             return "";
         }
-        private void StartSelectedApp()
+        private async void StartSelectedApp()
         {
             DropDownItem item = new DropDownItem();
             item = (DropDownItem)ListView1.SelectedItem;
@@ -133,12 +131,10 @@ namespace AppLauncher
             }
             item.LastUsed = DateTime.Now;
             item.TotalTimesUsed++;
-            DatabaseManager.UpdateDB(item);
+            await Task.Run(() =>DatabaseManager.UpdateDB(item));
             TextBar1.Clear();
-        }
-      
-
-        private void StartSelectedFile()
+        }    
+        private async void StartSelectedFile()
         {
             DropDownItem item = new DropDownItem();
             item = (DropDownItem)ListView1.SelectedItem;
@@ -153,7 +149,7 @@ namespace AppLauncher
             }
             item.LastUsed = DateTime.Now; 
             item.TotalTimesUsed++;
-            DatabaseManager.UpdateDB(item);
+            await Task.Run(() => DatabaseManager.UpdateDB(item));
             TextBar1.Clear();
         }
         private void StartSelectedSearch()
@@ -212,34 +208,67 @@ namespace AppLauncher
             //        }
             //    }
             //}
-            var all = await Task.Run(()=>DatabaseManager.SelectFromDB(text, type));
-           all = all.OrderByDescending(x => x.TotalUsed).Take(6).ToList();
+
+            if (string.IsNullOrEmpty(text))
+            {
+                return new List<DropDownItem>();
+            }
+            List<FileItem> all = new List<FileItem>();
+            if (type == 0)
+            {
+                 all = await Task.Run(() => DatabaseManager.SelectFromDB(text, type));
+            }
+            if (type == 1)
+            {
+                all = await Task.Run(() => DatabaseManager.SelectFromDBGreaterEqualType(text, type));
+            }
+           all = all.OrderByDescending(x => x.TotalUsed).Take(15).ToList();
            foreach (var f in all)
            {
-               var content = f.FileName;
+               
+               System.Windows.Media.Imaging.BitmapSource img;
+
+               if ((f.Type == FileType.file) && !filesIcons.ContainsKey(f.Extension))
+               {
+                   Icon ico = System.Drawing.Icon.ExtractAssociatedIcon(f.FileLocation);
+                   var tmp = System.Windows.Interop.Imaging.CreateBitmapSourceFromHIcon(ico.Handle, System.Windows.Int32Rect.Empty, System.Windows.Media.Imaging.BitmapSizeOptions.FromEmptyOptions());
+                   tmp.Freeze();
+                   img = tmp;
+                   filesIcons.Add(f.Extension, img);
+                   
+               }
+               else if ((FileType)type == FileType.app)
+               {
+                   Icon ico = System.Drawing.Icon.ExtractAssociatedIcon(f.FileLocation);
+                   var tmp = System.Windows.Interop.Imaging.CreateBitmapSourceFromHIcon(ico.Handle, System.Windows.Int32Rect.Empty, System.Windows.Media.Imaging.BitmapSizeOptions.FromEmptyOptions());
+                   tmp.Freeze();
+                   img = tmp;
+               }
+               else if (f.Type == FileType.folder && !filesIcons.ContainsKey(f.Extension))
+               {
+                   Icon ico = System.Drawing.Icon.ExtractAssociatedIcon(Environment.GetEnvironmentVariable("windir")  + "\\explorer.exe");
+                   var tmp = System.Windows.Interop.Imaging.CreateBitmapSourceFromHIcon(ico.Handle, System.Windows.Int32Rect.Empty, System.Windows.Media.Imaging.BitmapSizeOptions.FromEmptyOptions());
+                   tmp.Freeze();
+                   img = tmp;
+                   filesIcons.Add(f.Extension, img);
+               }
+               else
+                   img = filesIcons[f.Extension];
+        
+
+
+               var content = char.ToUpper(f.FileName[0]) + f.FileName.Substring(1);
                if (!string.IsNullOrEmpty(f.DisplayName))
-                   content = f.DisplayName;
-               items.Add(new DropDownItem {ID = f.ID, Content = content, Path = f.FileLocation, Option = f.FileLocation, /*ImgSrc = filesIcons[f.Extension],*/ TotalTimesUsed = f.TotalUsed, LastUsed = f.LastUsed });
+                   content = char.ToUpper(f.DisplayName[0]) + f.DisplayName.Substring(1);
+               items.Add(new DropDownItem {ID = f.ID, Content = content , Path = f.FileLocation, Option = f.FileLocation, ImgSrc = img , TotalTimesUsed = f.TotalUsed, LastUsed = f.LastUsed });
            }
-            return new List<DropDownItem>(items.Take(6));
+           return items;
         }
 
 
         #region OperatingModes
         private async Task<List<DropDownItem>> AppSearch(string text)
-        {
-            //List<DropDownItem> searchList = new List<DropDownItem>();
-            //if (!string.IsNullOrEmpty(text))
-            //{
-            //    foreach (Executable e in software)
-            //    {
-            //        if (e.Name.ToLower().StartsWith(text.ToLower()) || (e.Name.ToLower().Contains(text.ToLower()) && text.Length >= 3))
-            //        {
-            //            string set = e.Location;
-            //            if (e.Location.Length >= 40)
-            //            {
-            //                set = e.Location.Substring(0, 40) + "...";
-            //            }
+        {             
             if (!Dispatcher.CheckAccess())
             {
                 Dispatcher.Invoke(() => ContentColumn.Width = 200, DispatcherPriority.Normal);
@@ -251,18 +280,6 @@ namespace AppLauncher
                 ContentColumn.Width = 200;
                 OptionColumn.Width = 350;
             }
-
-            //            searchList.Add(new DropDownItem { Content = e.Name.Substring(0, e.Name.Length - 4), Path = e.Location, ImgSrc = e.ImgSrc, LastUsed = e.LastUsed, Option = set });
-            //        }
-            //    }
-            //}
-            //searchList.Sort();
-            //IEnumerable<DropDownItem> firstSix = searchList.Take(6);
-            //searchList = firstSix.ToList();
-            //searchList.Sort();
-            //return searchList;
-
-
             return await Search(text, 0);
         }
         
@@ -351,7 +368,7 @@ namespace AppLauncher
         {
             mode = "file"; 
             List<DropDownItem> searchList = new List<DropDownItem>();                   
-            searchList = await Search(text, 1);
+            searchList = await Search(text, (int)FileType.file);
                      if (!Dispatcher.CheckAccess())
                         {
                             Dispatcher.Invoke(() => ContentColumn.Width = 200, DispatcherPriority.Normal);
@@ -368,20 +385,19 @@ namespace AppLauncher
         
             
         
-        private void DropDownAdd(DropDownItem item)
-        {
-            this.ListView1.Items.Add(item);
-            ListView1.SelectedItem = ListView1.Items[0];
-            ListView1.Visibility = Visibility.Visible;
-        }
 
+
+        private void DropDownAdd(DropDownItem item)
+        {   
+                this.ListView1.Items.Add(item);
+                ListView1.SelectedItem = ListView1.Items[0];
+                ListView1.Visibility = Visibility.Visible;
+        }
         #endregion
 
         #region UI
         private async void TextBar1_TextChanged(object sender, TextChangedEventArgs e)
         {
-
-
             string text = TextBar1.Text;
 
             if (string.IsNullOrEmpty(TextBar1.Text))
@@ -403,8 +419,7 @@ namespace AppLauncher
             }
             else
             {
-                text = TextBar1.Text;
-                TextBar1.Text = await Task.Run(() => Calculator(text));
+                text = await Task.Run(() => Calculator(text));
                 if (mode == "calc")
                 {
                     ContentColumn.Width = 300;
@@ -412,7 +427,7 @@ namespace AppLauncher
 
                     Uri imageUri = new Uri(@"..\Content\calc.ico", UriKind.Relative);
                     BitmapImage imageBitmap = new BitmapImage(imageUri);
-                    DropDownItem item = new DropDownItem { Content = TextBar1.Text, Option = "Copy with enter", ImgSrc = imageBitmap };
+                    DropDownItem item = new DropDownItem { Content = text, Option = "Copy with enter", ImgSrc = imageBitmap };
                     ListView1.Items.Clear();
                     if (item.Content.Equals("Please use a valid expression"))
                         item.Option = "";
@@ -432,7 +447,7 @@ namespace AppLauncher
                     }
                     catch (Exception excep)
                     {
-                         //System.Windows.MessageBox.Show(excep.Message);
+                        System.Windows.MessageBox.Show(excep.Message);
                     }
                     //////////////
                     ListView1.Items.Clear();
@@ -440,12 +455,12 @@ namespace AppLauncher
                     {
                         for (int i = 0; i < dropDownList.Count; i++)
                         {
-                            DropDownAdd(dropDownList[i]); 
+                            DropDownAdd(dropDownList[i]);
                         }
                     }
                 }
 
-            
+
             }
             if (string.IsNullOrEmpty(TextBar1.Text))
             {
