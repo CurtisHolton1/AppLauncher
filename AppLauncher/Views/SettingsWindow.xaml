@@ -14,8 +14,8 @@
               Name="listView1" 
               VerticalAlignment="Top" 
               Width="200"
-                      Margin="0,20,0,0"
-              ItemsSource="{Binding ExtensionList}"
+              Margin="0,44,0,0"
+              ItemsSource="{Binding ExtensionList, UpdateSourceTrigger=PropertyChanged}"
               IsSynchronizedWithCurrentItem="True"
               SelectionChanged="listView1_SelectionChanged">
                 <ListView.View>
@@ -24,15 +24,18 @@
                             <GridViewColumn>
                                 <GridViewColumn.CellTemplate>
                                     <DataTemplate>
-                                        <CheckBox Tag="{Binding Type}" IsChecked="{Binding RelativeSource={RelativeSource AncestorType={x:Type ListViewItem}}, Path=IsSelected}" />
+                                        <CheckBox Tag="{Binding Type}" IsChecked="{Binding IsChecked, UpdateSourceTrigger=PropertyChanged}" />
+                                        
+                                        
                                     </DataTemplate>
                                 </GridViewColumn.CellTemplate>
                             </GridViewColumn>
-                            <GridViewColumn DisplayMemberBinding="{Binding Type, UpdateSourceTrigger=PropertyChanged}" Header="Extension" />
+                            <GridViewColumn DisplayMemberBinding="{Binding Type, UpdateSourceTrigger=PropertyChanged}" Header="Extension" Width="150" />
                         </GridView.Columns>
                     </GridView>
                 </ListView.View>
             </ListView>
+            <Button x:Name="ApplyButton" Content="Apply" Margin="165,244,0,0" Height="Auto" Width="Auto" VerticalAlignment="Top" HorizontalAlignment="Left" Click="ApplyButton_Click"></Button>
         </Grid>
         <Grid>
         </Grid>

@@ -1,20 +1,13 @@
 ﻿using AppLauncher.Services;
+using Curt.shared;
 using Curt.shared.Models;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Configuration;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
 
 namespace AppLauncher
 {
@@ -41,7 +34,8 @@ namespace AppLauncher
             else
                 checkBoxChecked = false;
             ExtensionList = new List<Extension>();
-     
+            ExtensionList = DatabaseManager.GetAllFromWhiteList();
+          
            
         }
 
@@ -104,6 +98,18 @@ namespace AppLauncher
         {
 
         }
+        private void ApplyButton_Click(object sender, RoutedEventArgs e)
+        {                     
+            DatabaseManager.DeleteWhiteList();
+            DatabaseManager.WriteWhiteListTable(ExtensionList);
+            foreach(var ex in ExtensionList)
+            {
+                if (!ex.IsChecked)
+                {
+                    DatabaseManager.TrimFilesTable(ex);
+                }
+            }
 
+        }
     }
 }

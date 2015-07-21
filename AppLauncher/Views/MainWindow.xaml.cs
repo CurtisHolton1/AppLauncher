@@ -17,7 +17,6 @@ using Curt.shared.Models;
 using System.Drawing;
 using System.IO;
 
-
 namespace AppLauncher
 {
     /// <summary>
@@ -43,9 +42,7 @@ namespace AppLauncher
         {
             InitializeComponent();
             WindowWatcher.AddWindow(this);
-
             FileWatcher watcher = new FileWatcher("C:\\");
-
             Start();
             updateFlag = true;
             timerFlag = false;
@@ -58,12 +55,9 @@ namespace AppLauncher
 
         private async Task<string> Start()
         {
-
             DatabaseManager.SetDBLocation(AppDomain.CurrentDomain.BaseDirectory + "FilesData.sqlite");
             //SharedHelper.KillProcess("CurtInstaller");
-            SharedHelper.DeleteDirectory(AppDomain.CurrentDomain.BaseDirectory + "..\\..\\tmp");
-            //software = await Task.Run(()=> DatabaseManager.GetExecutables(AppDomain.CurrentDomain.BaseDirectory + "FilesData.sqlite"));
-           // allFiles = await Task.Run(()=>DatabaseManager.GetFiles(AppDomain.CurrentDomain.BaseDirectory + "FilesData.sqlite"));           
+            SharedHelper.DeleteDirectory(AppDomain.CurrentDomain.BaseDirectory + "..\\..\\tmp");           
             TextBar1.Focus();
             //Startup.RemoveStartup();
             Key key;
@@ -71,11 +65,19 @@ namespace AppLauncher
             KeyModifier keyMod;
             Enum.TryParse(ConfigurationManager.AppSettings["KeyMod"], out keyMod);
             HotKey _hotKey = new HotKey(key, keyMod, OnHotKeyHandler);
-            Startup.SetStartup();
-            //FileWriteRead fileObject = new FileWriteRead();
-            //software = await Task.Run(() => fileObject.FileDeserialization());
-           
+            Startup.SetStartup();        
             filesIcons = new Dictionary<string, BitmapSource>();
+            //using (StreamReader sr = new StreamReader("WhiteListTmp.txt"))
+            //{
+            //    var all = sr.ReadToEnd();
+            //    var tmp = all.Split('\t').ToList();
+            //    var toWrite = new List<Extension>();
+            //    foreach(var t in tmp)
+            //    {
+            //        toWrite.Add(new Extension { Type = t, IsChecked = true });
+            //    }
+            //    DatabaseManager.CreateWhiteListTable(toWrite);
+            //}
             return "";
         }
         private async void timer_Tick(object sender, EventArgs e)
@@ -134,7 +136,7 @@ namespace AppLauncher
             }
             item.LastUsed = DateTime.Now;
             item.TotalTimesUsed++;
-            await Task.Run(() =>DatabaseManager.UpdateDB(item));
+            await Task.Run(() =>DatabaseManager.UpdateFilesTable(item));
             TextBar1.Clear();
         }    
         private async void StartSelectedFile()
@@ -152,7 +154,7 @@ namespace AppLauncher
             }
             item.LastUsed = DateTime.Now; 
             item.TotalTimesUsed++;
-            await Task.Run(() => DatabaseManager.UpdateDB(item));
+            await Task.Run(() => DatabaseManager.UpdateFilesTable(item));
             TextBar1.Clear();
         }
         private void StartSelectedSearch()
@@ -219,11 +221,11 @@ namespace AppLauncher
             List<FileItem> all = new List<FileItem>();
             if (type == 0)
             {
-                 all = await Task.Run(() => DatabaseManager.SelectFromDB(text, type));
+                 all = await Task.Run(() => DatabaseManager.SelectFromFilesTable(text, type));
             }
             if (type == 1)
             {
-                all = await Task.Run(() => DatabaseManager.SelectFromDBGreaterEqualType(text, type));
+                all = await Task.Run(() => DatabaseManager.SelectFromFilesTableGreaterEqualType(text, type));
             }
            all = all.OrderByDescending(x => x.TotalUsed).Take(15).ToList();
            foreach (var f in all)
