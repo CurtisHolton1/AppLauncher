@@ -52,11 +52,14 @@ namespace AppLauncher
             timer.Interval = TimeSpan.FromMinutes(30);
             timer.Tick += timer_Tick;
             timer.Start();
+            
         }
       
 
         private async Task<string> Start()
         {
+
+            DatabaseManager.SetDBLocation(AppDomain.CurrentDomain.BaseDirectory + "FilesData.sqlite");
             //SharedHelper.KillProcess("CurtInstaller");
             SharedHelper.DeleteDirectory(AppDomain.CurrentDomain.BaseDirectory + "..\\..\\tmp");
             //software = await Task.Run(()=> DatabaseManager.GetExecutables(AppDomain.CurrentDomain.BaseDirectory + "FilesData.sqlite"));

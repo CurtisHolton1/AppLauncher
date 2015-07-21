@@ -19,7 +19,7 @@ namespace CurtInstaller.ViewModels
         {
             model = Factory.GetInstallModel();
             SharedHelper.KillProcess("AppLauncher");
-
+            DatabaseManager.SetDBLocation(model.Location + "\\AppLauncher\\AppLauncher\\FilesData.sqlite");
         }
 
         public async Task<string> InstallWrapper(System.IProgress<double> progressIndicator)
@@ -51,8 +51,10 @@ namespace CurtInstaller.ViewModels
                 {
                     if (string.IsNullOrEmpty(StartupMode)) //install mode
                     {
-
-                        await Task.Run(() => DatabaseManager.CreateFilesDatabase(model.Location + "\\AppLauncher\\AppLauncher", "FilesData.sqlite", progressIndicator, true));
+                        DatabaseManager.CreateDB();
+                         DatabaseManager.CreateWhiteListTable();
+                        progressIndicator.Report(.5);
+                        await Task.Run(() => DatabaseManager.CreateFilesTable(progressIndicator, true));
                       
                     }           
                 }

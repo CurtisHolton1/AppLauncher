@@ -1,4 +1,5 @@
 ﻿using AppLauncher.Services;
+using Curt.shared.Models;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -24,6 +25,12 @@ namespace AppLauncher
     {
         private bool checkBoxChecked;
         public bool CheckBoxChecked { get { return checkBoxChecked; } set { checkBoxChecked = value; this.OnPropertyChanged("CheckBoxChecked"); } }
+        private List<Extension> extensionList;
+        public List<Extension> ExtensionList
+        {
+            get { return extensionList; }
+            set { extensionList = value; this.OnPropertyChanged("Extension"); }
+        }
         public SettingsWindow()
         {
             InitializeComponent();
@@ -33,6 +40,9 @@ namespace AppLauncher
                 CheckBoxChecked = true;
             else
                 checkBoxChecked = false;
+            ExtensionList = new List<Extension>();
+     
+           
         }
 
         private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
@@ -89,6 +99,11 @@ namespace AppLauncher
         }
 
         #endregion
+
+        private void listView1_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+
+        }
 
     }
 }

@@ -74,6 +74,7 @@
     <Compile Include="DatabaseManager.cs" />
     <Compile Include="FileSearch.cs" />
     <Compile Include="Models\DropDownItem.cs" />
+    <Compile Include="Models\Extension.cs" />
     <Compile Include="Models\FileItem.cs" />
     <Compile Include="Properties\Settings.Designer.cs">
       <AutoGen>True</AutoGen>
