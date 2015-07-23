@@ -29,14 +29,14 @@ namespace AppLauncher
             InitializeComponent();
             this.DataContext = this;
             WindowWatcher.AddWindow(this);
-            if(Convert.ToBoolean(ConfigurationManager.AppSettings["AutoUpdatesEnabled"]))
+            if (Convert.ToBoolean(ConfigurationManager.AppSettings["AutoUpdatesEnabled"]))
                 CheckBoxChecked = true;
             else
                 checkBoxChecked = false;
             ExtensionList = new List<Extension>();
             ExtensionList = DatabaseManager.GetAllFromWhiteList();
-          
-           
+
+
         }
 
         private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
@@ -67,7 +67,7 @@ namespace AppLauncher
                 var available = await Task.Run(() => VersionCheck.CompareCurrent());
                 if (available)
                 {
-                   VersionCheck.AskForUpdate();
+                    VersionCheck.AskForUpdate();
                 }
             }
             catch (Exception e)
@@ -94,22 +94,53 @@ namespace AppLauncher
 
         #endregion
 
-        private void listView1_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-
-        }
         private void ApplyButton_Click(object sender, RoutedEventArgs e)
-        {                     
-            DatabaseManager.DeleteWhiteList();
-            DatabaseManager.WriteWhiteListTable(ExtensionList);
-            foreach(var ex in ExtensionList)
+        {
+            bool reIndex = false;
+            try
             {
-                if (!ex.IsChecked)
+                string sMessageBoxText = "It may take some time for changes to take effect, would you like to continue?";
+                string sCaption = "Curt";
+                MessageBoxButton btnMessageBox = MessageBoxButton.YesNo;
+                MessageBoxImage icnMessageBox = MessageBoxImage.Warning;
+                MessageBoxResult rsltMessageBox = MessageBox.Show(sMessageBoxText, sCaption, btnMessageBox, icnMessageBox);
+                switch (rsltMessageBox)
                 {
-                    DatabaseManager.TrimFilesTable(ex);
+                    case MessageBoxResult.Yes:
+                        {
+                            var all = DatabaseManager.GetAllFromWhiteList();
+                            if (all != ExtensionList)
+                            {
+                                DatabaseManager.DeleteWhiteList();
+                                DatabaseManager.WriteWhiteListTable(ExtensionList);
+                                foreach (var ex in ExtensionList)
+                                {
+                                    if (!ex.IsChecked)
+                                    {
+                                        DatabaseManager.TrimFilesTable(ex);
+                                    }
+                                    if (ex.IsChecked)
+                                    {
+                                        var index = all.IndexOf(ex);
+                                        var element = all[index];
+                                        if (!element.IsChecked)
+                                        {
+                                            reIndex = true;
+                                        }
+                                    }
+                                }
+                            }
+
+                                break;
+                            }
+                    case MessageBoxResult.No:
+                        {
+                            break;
+                        }
+                
                 }
             }
-
+            catch { }
         }
     }
 }

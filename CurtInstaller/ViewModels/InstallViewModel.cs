@@ -60,6 +60,7 @@ namespace CurtInstaller.ViewModels
                             {
                                 toWrite.Add(new Extension { Type = t, IsChecked = true });
                             }
+                            DatabaseManager.CreateWhiteListTable(toWrite);
                             progressIndicator.Report(.5);
                             await Task.Run(() => DatabaseManager.CreateFilesTable(progressIndicator, true));
                         }
