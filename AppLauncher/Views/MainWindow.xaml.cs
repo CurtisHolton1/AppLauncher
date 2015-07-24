@@ -164,6 +164,18 @@ namespace AppLauncher
             Process.Start(item.Path + item.Content);
             TextBar1.Clear();
         }
+        private void StartSelectedCommand()
+        {
+            try {
+                DropDownItem item = new DropDownItem();
+                item = (DropDownItem)ListView1.SelectedItem;
+                Process.Start(item.Path);
+                TextBar1.Clear();
+            }
+            catch (Exception e) {
+                Console.WriteLine(e.Message);
+                    }
+        }
 
         private async Task<List<DropDownItem>> Search(string text, int type)
         {
@@ -270,7 +282,6 @@ namespace AppLauncher
            return items;
         }
 
-
         #region OperatingModes
         private async Task<List<DropDownItem>> AppSearch(string text)
         {             
@@ -288,7 +299,6 @@ namespace AppLauncher
             return await Search(text, 0);
         }
         
-
         private async Task<string> Calculator(string text)
         {
 
@@ -336,7 +346,7 @@ namespace AppLauncher
             return setString;
         }
 
-        private async Task<List<DropDownItem>> WebSearch(string text)
+        private  List<DropDownItem> WebSearch(string text)
         {
             mode = "search";
             List<DropDownItem> searchList = new List<DropDownItem>();
@@ -387,10 +397,15 @@ namespace AppLauncher
             return searchList;
         }
 
-        
-            
-        
-
+        private async Task<List<DropDownItem>> Commands(string text)
+        {
+            mode = "command";
+            List<DropDownItem> commandList = new List<DropDownItem>();                     
+            commandList.Add(new DropDownItem { Content = "-Outlook", Path = "https://Outlook.com" });
+            commandList.Add(new DropDownItem { Content = "-Asana", Path = "https://Asana.com" });
+            commandList.Add(new DropDownItem { Content = "-Gmail", Path = "https://Gmail.com" }); 
+            return commandList.Where(x => x.Content.ToLower().StartsWith(text.ToLower())).ToList();
+        }
 
         private void DropDownAdd(DropDownItem item)
         {   
@@ -404,7 +419,7 @@ namespace AppLauncher
         private async void TextBar1_TextChanged(object sender, TextChangedEventArgs e)
         {
             string text = TextBar1.Text;
-
+           
             if (string.IsNullOrEmpty(TextBar1.Text))
             {
                 ListView1.Items.Clear();
@@ -441,19 +456,26 @@ namespace AppLauncher
                 else
                 {
                     text = TextBar1.Text;
-                    dropDownList = await WebSearch(text);
+                    dropDownList = WebSearch(text);
                     ////////////
                     try
                     {
-                        if (text.StartsWith("find ") && text.Length > 5)
+                        if (text.ToLower().StartsWith("find ") && text.Length > 5)
                         {
                             dropDownList = await Task.Run(() => FileSearcher(text.Substring(5, text.Length - 5)));
-                        }
+                        }                    
                     }
                     catch (Exception excep)
                     {
                         System.Windows.MessageBox.Show(excep.Message);
                     }
+
+                    if (text.ToLower().StartsWith("-"))
+                    {
+                        dropDownList = await Task.Run(()=>Commands(text));                    
+                    }
+
+
                     //////////////
                     ListView1.Items.Clear();
                     if (dropDownList != null)
@@ -464,8 +486,6 @@ namespace AppLauncher
                         }
                     }
                 }
-
-
             }
             if (string.IsNullOrEmpty(TextBar1.Text))
             {
@@ -474,7 +494,6 @@ namespace AppLauncher
                 this.Height = 95;
             }
             this.Height = 95 + (ListView1.Items.Count * 40);
-
         }
 
         private void TextBar1_PreviewKeyDown(object sender, KeyEventArgs e)
@@ -591,6 +610,10 @@ namespace AppLauncher
             else if (e.Key == Key.Return && !ListView1.Items.IsEmpty && mode == "file")
             {
                 StartSelectedFile();
+            }
+            else if(e.Key == Key.Return && !ListView1.Items.IsEmpty && mode == "command")
+            {
+                StartSelectedCommand();
             }
             else if (e.Key == Key.Up && ListView1.SelectedItem == ListView1.Items[0])
             {

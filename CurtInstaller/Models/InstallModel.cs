@@ -80,8 +80,7 @@ namespace CurtInstaller.Models
                MoveFiles(Location + "\\AppLauncher\\AppLauncher", Location + "\\tmp\\AppLauncher");
                MoveFiles(Location + "\\AppLauncher\\AppLauncher\\x86", Location + "\\tmp\\AppLauncher\\x86");
                MoveFiles(Location + "\\AppLauncher\\AppLauncher\\x64", Location + "\\tmp\\AppLauncher\\x64");
-               //File.Move(Location + "\\tmp\\AppLauncher\\InstalledSoftware.bin", Location + "\\AppLauncher\\AppLauncher\\InstalledSoftware.bin");
-               File.Move(Location + "\\tmp\\AppLauncher\\FilesData.sqlite", Location + "\\AppLauncher\\AppLauncher\\FilesData.sqlite");
+              // File.Move(Location + "\\tmp\\AppLauncher\\FilesData.sqlite", Location + "\\AppLauncher\\AppLauncher\\FilesData.sqlite");
                bool b = await Task.Run(() => InstallFiles());               
                return b;
            }
@@ -100,6 +99,7 @@ namespace CurtInstaller.Models
            foreach (var aFile in files.ToList<string>())
            {
                var fileName = aFile.Split('\\').Last();
+                if(!aFile.Equals("FilesData.sqlite"))
                File.Move(aFile, dest + "\\" + fileName);
            }
        } 

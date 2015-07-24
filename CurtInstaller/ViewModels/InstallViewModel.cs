@@ -62,10 +62,11 @@ namespace CurtInstaller.ViewModels
                             }
                             await Task.Run(() => DatabaseManager.CreateFilesTable(progressIndicator));
                             await Task.Run(() =>DatabaseManager.CreateWhiteListTable(toWrite));
-                            //progressIndicator.Report(.5);
                             var FilesFound = await Task.Run(() => FileSearch.FileSpider("c:\\", "*"));
-                            await Task.Run(()=>DatabaseManager.InsertIntoFilesTable(FilesFound.ToList()));                                                                                                       
+                            await Task.Run(()=>DatabaseManager.InsertIntoFilesTable(FilesFound.ToList()));                                                                                                                         
                         }
+                        if(File.Exists("WhiteListTmp.txt"))
+                        File.Delete("WhiteListTmp.txt");
                     }
                 }
                 else
