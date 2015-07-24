@@ -1,9 +1,9 @@
 ﻿using Curt.shared;
 using Curt.shared.Models;
-using CurtInstaller.Models;
 using System;
-using System.Collections.Generic;
 using System.IO;
+using CurtInstaller.Models;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -19,7 +19,7 @@ namespace CurtInstaller.ViewModels
             SharedHelper.KillProcess("AppLauncher");
             DatabaseManager.SetDBLocation(model.Location + "\\AppLauncher\\AppLauncher\\FilesData.sqlite");
         }
-
+        
         public async Task<string> InstallWrapper(System.IProgress<double> progressIndicator)
         {
             try
@@ -60,9 +60,12 @@ namespace CurtInstaller.ViewModels
                             {
                                 toWrite.Add(new Extension { Type = t, IsChecked = true });
                             }
-                            DatabaseManager.CreateWhiteListTable(toWrite);
-                            progressIndicator.Report(.5);
-                            await Task.Run(() => DatabaseManager.CreateFilesTable(progressIndicator, true));
+                            await Task.Run(() => DatabaseManager.CreateFilesTable(progressIndicator));
+                            await Task.Run(() =>DatabaseManager.CreateWhiteListTable(toWrite));
+                            //progressIndicator.Report(.5);
+                            var FilesFound = await Task.Run(() => FileSearch.FileSpider("c:\\", "*"));
+
+                            await Task.Run(()=>DatabaseManager.InsertIntoFilesTable(FilesFound.ToList()));                                                                                                       
                         }
                     }
                 }

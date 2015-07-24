@@ -36,7 +36,7 @@ namespace AppLauncher
         int tickCount;
         //ILookup<string, string> fileTable;
        // Lookup<string, FileItem> allFiles;
-        Dictionary<string, BitmapSource> filesIcons;
+        Dictionary<int, BitmapSource> filesIcons;
 
         public MainWindow()
         {
@@ -66,7 +66,7 @@ namespace AppLauncher
             Enum.TryParse(ConfigurationManager.AppSettings["KeyMod"], out keyMod);
             HotKey _hotKey = new HotKey(key, keyMod, OnHotKeyHandler);
             Startup.SetStartup();        
-            filesIcons = new Dictionary<string, BitmapSource>();
+            filesIcons = new Dictionary<int, BitmapSource>();
             //using (StreamReader sr = new StreamReader("WhiteListTmp.txt"))
             //{
             //    var all = sr.ReadToEnd();
@@ -233,13 +233,13 @@ namespace AppLauncher
                
                System.Windows.Media.Imaging.BitmapSource img;
 
-               if ((f.Type == FileType.file) && !filesIcons.ContainsKey(f.Extension))
+               if ((f.Type == FileType.file) && !filesIcons.ContainsKey(f.ExtensionID))
                {
                    Icon ico = System.Drawing.Icon.ExtractAssociatedIcon(f.FileLocation);
                    var tmp = System.Windows.Interop.Imaging.CreateBitmapSourceFromHIcon(ico.Handle, System.Windows.Int32Rect.Empty, System.Windows.Media.Imaging.BitmapSizeOptions.FromEmptyOptions());
                    tmp.Freeze();
                    img = tmp;
-                   filesIcons.Add(f.Extension, img);
+                   filesIcons.Add(f.ExtensionID, img);
                    
                }
                else if ((FileType)type == FileType.app)
@@ -249,16 +249,16 @@ namespace AppLauncher
                    tmp.Freeze();
                    img = tmp;
                }
-               else if (f.Type == FileType.folder && !filesIcons.ContainsKey(f.Extension))
+               else if (f.Type == FileType.folder && !filesIcons.ContainsKey(f.ExtensionID))
                {
                    Icon ico = System.Drawing.Icon.ExtractAssociatedIcon(Environment.GetEnvironmentVariable("windir")  + "\\explorer.exe");
                    var tmp = System.Windows.Interop.Imaging.CreateBitmapSourceFromHIcon(ico.Handle, System.Windows.Int32Rect.Empty, System.Windows.Media.Imaging.BitmapSizeOptions.FromEmptyOptions());
                    tmp.Freeze();
                    img = tmp;
-                   filesIcons.Add(f.Extension, img);
+                   filesIcons.Add(f.ExtensionID, img);
                }
                else
-                   img = filesIcons[f.Extension];
+                   img = filesIcons[f.ExtensionID];
         
 
 

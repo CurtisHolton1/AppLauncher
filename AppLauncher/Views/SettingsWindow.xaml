@@ -1,21 +1,21 @@
 ﻿<Window x:Class="AppLauncher.SettingsWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="Settings" Height="600" Width="600" WindowStyle="ToolWindow" Closing="Window_Closing">
+        Title="Settings" Height="600" Width="500" WindowStyle="ToolWindow" Closing="Window_Closing" ResizeMode="CanMinimize">
     <Grid>
-        <Grid>
+        <Grid HorizontalAlignment="Stretch">
         <TextBlock Text="Enable Auto updates"></TextBlock>
         <CheckBox Margin="120,2,0,0" Checked="CheckBox_Checked" Unchecked="CheckBox_Unchecked" VerticalAlignment="Top" HorizontalAlignment="Left" IsChecked="{Binding CheckBoxChecked, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"></CheckBox>
             <Button Content="Check for updates" Margin="140,0,0,0" HorizontalAlignment="Left" VerticalAlignment="Top" Click="Button_Click"></Button>
         </Grid>
-        <Grid Height="Auto" Width="Auto" VerticalAlignment="Top" HorizontalAlignment="Left" Margin="300,0,0,0">
-            <TextBlock Text="Extensions to index for 'Find' Feature" Margin="0,0,0,0" Height="Auto" VerticalAlignment="Top" HorizontalAlignment="Left"></TextBlock>
-            <ListView Height="200" 
+        <Grid HorizontalAlignment="Stretch" Margin="200,0,0,0" >
+            <TextBlock Text="Extensions to index for 'Find' Feature" Margin="82,0,0,0" Height="Auto" VerticalAlignment="Top" HorizontalAlignment="Left"></TextBlock>
+            <ListView Height="524" 
               HorizontalAlignment="Left" 
               Name="listView1" 
               VerticalAlignment="Top" 
               Width="200"
-              Margin="0,20,0,0"
+              Margin="82,16,0,0"
               ItemsSource="{Binding ExtensionList, UpdateSourceTrigger=PropertyChanged}"
               IsSynchronizedWithCurrentItem="True">
                 <ListView.View>
@@ -35,7 +35,7 @@
                     </GridView>
                 </ListView.View>
             </ListView>
-            <Button x:Name="ApplyButton" Content="Apply" Margin="165,220,0,0" Height="Auto" Width="Auto" VerticalAlignment="Top" HorizontalAlignment="Left" Click="ApplyButton_Click"></Button>
+            <Button x:Name="ApplyButton" Content="Apply" Margin="247,540,0,0" Height="Auto" Width="Auto" VerticalAlignment="Top" HorizontalAlignment="Left" Click="ApplyButton_Click"></Button>
         </Grid>
         <Grid>
         </Grid>
