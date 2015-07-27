@@ -22,25 +22,17 @@ namespace CurtInstaller.ViewModels
         
         public async Task<string> InstallWrapper(System.IProgress<double> progressIndicator)
         {
+            
             try
             {
                 if (!string.IsNullOrEmpty(StartupMode) && StartupMode.Equals("Update"))
                 {
-                    model.Location = System.IO.Path.GetDirectoryName(System.Windows.Forms.Application.ExecutablePath);
-                    model.Location = System.IO.Directory.GetParent(model.Location).FullName;
-                    model.Location = System.IO.Directory.GetParent(model.Location).FullName;
+                     model.Location = System.IO.Path.GetDirectoryName(System.Windows.Forms.Application.ExecutablePath);
+                     model.Location = System.IO.Directory.GetParent(model.Location).FullName;
+                     model.Location = System.IO.Directory.GetParent(model.Location).FullName;
+
                 }
-                //else if (!string.IsNullOrEmpty(StartupMode) && StartupMode.Equals("WriteFile"))
-                //{
-                //    model.Location = System.IO.Path.GetDirectoryName(System.Windows.Forms.Application.ExecutablePath);
-                //    model.Location = System.IO.Directory.GetParent(model.Location).FullName;
-                //    model.Location = System.IO.Directory.GetParent(model.Location).FullName;  
-                //    //FileWriteRead fileObject = new FileWriteRead();
-                //    //await fileObject.WriteFile(Startup.GetInitialLocations(),model.Location, progressIndicator);
-                //    model.StartLauncher();
-                //    System.Environment.Exit(0); 
-                //    return "";
-                //}
+  
                 var success = await Task.Run(() => model.Download(StartupMode));
                 //////////////////////////////////////
                 // success = false;

@@ -174,8 +174,7 @@ namespace AppLauncher
                 DropDownItem item = new DropDownItem();
                 item = (DropDownItem)ListView1.SelectedItem;
                 try
-                {
-                    
+                {              
                     if (item.Path.Contains(".exe") && SharedHelper.BringProcessToFront(item.Path.Substring(item.Path.LastIndexOf("\\")) ,item.Path))
                     {
                         this.Hide();

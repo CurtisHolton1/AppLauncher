@@ -7,7 +7,6 @@ using System.ComponentModel;
 using System.Configuration;
 using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Controls;
 
 namespace AppLauncher
 {
