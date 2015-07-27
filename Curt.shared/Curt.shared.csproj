@@ -62,6 +62,7 @@
     <Compile Include="DatabaseManager.cs" />
     <Compile Include="ExtensionConverter.cs" />
     <Compile Include="FileSearch.cs" />
+    <Compile Include="Models\Command.cs" />
     <Compile Include="Models\DropDownItem.cs" />
     <Compile Include="Models\Extension.cs" />
     <Compile Include="Models\FileItem.cs" />

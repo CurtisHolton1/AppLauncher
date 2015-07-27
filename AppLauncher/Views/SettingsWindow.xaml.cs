@@ -19,11 +19,9 @@ namespace AppLauncher
         private bool checkBoxChecked;
         public bool CheckBoxChecked { get { return checkBoxChecked; } set { checkBoxChecked = value; this.OnPropertyChanged("CheckBoxChecked"); } }
         private List<Extension> extensionList;
-        public List<Extension> ExtensionList
-        {
-            get { return extensionList; }
-            set { extensionList = value; this.OnPropertyChanged("Extension"); }
-        }
+        public List<Extension> ExtensionList { get { return extensionList; } set { extensionList = value; this.OnPropertyChanged("Extension"); } }
+        private List<Command> commandList;
+        public List<Command> CommandList { get { return commandList; } set { commandList = value; this.OnPropertyChanged("CommandList"); } }
         public SettingsWindow()
         {
             InitializeComponent();
@@ -35,9 +33,10 @@ namespace AppLauncher
                 checkBoxChecked = false;
             ExtensionList = new List<Extension>();
             ExtensionList = DatabaseManager.GetAllFromWhiteList();
-
-
+            CommandList = new List<Command>();
+            CommandList = DatabaseManager.GetAllFromCommandsTable();
         }
+
 
         private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
@@ -76,11 +75,6 @@ namespace AppLauncher
             }
             return "";
         }
-
-
-
-
-
 
         #region INotifyPropertyChanged Members
 
@@ -125,6 +119,11 @@ namespace AppLauncher
             }
             catch {  }
            
+        }
+
+        private void ApplyCommands_Click(object sender, RoutedEventArgs e)
+        {
+            DatabaseManager.WriteCommandsTable(CommandList);
         }
     }
 }

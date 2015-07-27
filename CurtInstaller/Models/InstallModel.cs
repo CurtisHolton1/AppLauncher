@@ -50,7 +50,7 @@ namespace CurtInstaller.Models
            {                        
                var z = ZipFile.OpenRead(Location + Properties.Settings.Default.zipName);
                z.ExtractToDirectory(Location);
-               z.Dispose();
+               z.Dispose(); 
                File.Delete(Location + Properties.Settings.Default.zipName);
               return true;               
            }

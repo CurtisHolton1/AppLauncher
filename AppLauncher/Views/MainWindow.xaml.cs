@@ -50,9 +50,7 @@ namespace AppLauncher
             timer.Tick += timer_Tick;
             timer.Start();
             
-        }
-      
-
+        }     
         private async Task<string> Start()
         {
             DatabaseManager.SetDBLocation(AppDomain.CurrentDomain.BaseDirectory + "FilesData.sqlite");
@@ -112,6 +110,9 @@ namespace AppLauncher
             }
             return "";
         }
+
+        #region SearchAndStart
+
         private async void StartSelectedApp()
         {
             DropDownItem item = new DropDownItem();
@@ -139,6 +140,7 @@ namespace AppLauncher
             await Task.Run(() =>DatabaseManager.UpdateFilesTable(item));
             TextBar1.Clear();
         }    
+
         private async void StartSelectedFile()
         {
             DropDownItem item = new DropDownItem();
@@ -157,6 +159,7 @@ namespace AppLauncher
             await Task.Run(() => DatabaseManager.UpdateFilesTable(item));
             TextBar1.Clear();
         }
+
         private void StartSelectedSearch()
         {
             DropDownItem item = new DropDownItem();
@@ -164,12 +167,31 @@ namespace AppLauncher
             Process.Start(item.Path + item.Content);
             TextBar1.Clear();
         }
+
         private void StartSelectedCommand()
         {
             try {
                 DropDownItem item = new DropDownItem();
                 item = (DropDownItem)ListView1.SelectedItem;
-                Process.Start(item.Path);
+                try
+                {
+                    
+                    if (item.Path.Contains(".exe") && SharedHelper.BringProcessToFront(item.Path.Substring(item.Path.LastIndexOf("\\")) ,item.Path))
+                    {
+                        this.Hide();
+                    }
+                    else
+                    {
+                        Process.Start(item.Path);
+                    }
+                    TextBar1.Clear();
+                }
+                catch (Exception ex)
+                {
+                   
+                }
+                item.TotalTimesUsed++;
+                DatabaseManager.UpdateCommand(item);
                 TextBar1.Clear();
             }
             catch (Exception e) {
@@ -242,45 +264,45 @@ namespace AppLauncher
            all = all.OrderByDescending(x => x.TotalUsed).Take(15).ToList();
            foreach (var f in all)
            {
-               
-               System.Windows.Media.Imaging.BitmapSource img;
-
-               if ((f.Type == FileType.file) && !filesIcons.ContainsKey(f.ExtensionID))
-               {
-                   Icon ico = System.Drawing.Icon.ExtractAssociatedIcon(f.FileLocation);
-                   var tmp = System.Windows.Interop.Imaging.CreateBitmapSourceFromHIcon(ico.Handle, System.Windows.Int32Rect.Empty, System.Windows.Media.Imaging.BitmapSizeOptions.FromEmptyOptions());
-                   tmp.Freeze();
-                   img = tmp;
-                   filesIcons.Add(f.ExtensionID, img);
-                   
-               }
-               else if ((FileType)type == FileType.app)
-               {
-                   Icon ico = System.Drawing.Icon.ExtractAssociatedIcon(f.FileLocation);
-                   var tmp = System.Windows.Interop.Imaging.CreateBitmapSourceFromHIcon(ico.Handle, System.Windows.Int32Rect.Empty, System.Windows.Media.Imaging.BitmapSizeOptions.FromEmptyOptions());
-                   tmp.Freeze();
-                   img = tmp;
-               }
-               else if (f.Type == FileType.folder && !filesIcons.ContainsKey(f.ExtensionID))
-               {
-                   Icon ico = System.Drawing.Icon.ExtractAssociatedIcon(Environment.GetEnvironmentVariable("windir")  + "\\explorer.exe");
-                   var tmp = System.Windows.Interop.Imaging.CreateBitmapSourceFromHIcon(ico.Handle, System.Windows.Int32Rect.Empty, System.Windows.Media.Imaging.BitmapSizeOptions.FromEmptyOptions());
-                   tmp.Freeze();
-                   img = tmp;
-                   filesIcons.Add(f.ExtensionID, img);
-               }
-               else
-                   img = filesIcons[f.ExtensionID];
-        
-
-
-               var content = char.ToUpper(f.FileName[0]) + f.FileName.Substring(1);
-               if (!string.IsNullOrEmpty(f.DisplayName))
-                   content = char.ToUpper(f.DisplayName[0]) + f.DisplayName.Substring(1);
-               items.Add(new DropDownItem {ID = f.ID, Content = content , Path = f.FileLocation, Option = f.FileLocation, ImgSrc = img , TotalTimesUsed = f.TotalUsed, LastUsed = f.LastUsed });
+                if (File.Exists(f.FileLocation))
+                {
+                    System.Windows.Media.Imaging.BitmapSource img;
+                    if ((f.Type == FileType.file) && !filesIcons.ContainsKey(f.ExtensionID))
+                    {
+                        Icon ico = System.Drawing.Icon.ExtractAssociatedIcon(f.FileLocation);
+                        var tmp = System.Windows.Interop.Imaging.CreateBitmapSourceFromHIcon(ico.Handle, System.Windows.Int32Rect.Empty, System.Windows.Media.Imaging.BitmapSizeOptions.FromEmptyOptions());
+                        tmp.Freeze();
+                        img = tmp;
+                        filesIcons.Add(f.ExtensionID, img);
+                    }
+                    else if ((FileType)type == FileType.app)
+                    {
+                        Icon ico = System.Drawing.Icon.ExtractAssociatedIcon(f.FileLocation);
+                        var tmp = System.Windows.Interop.Imaging.CreateBitmapSourceFromHIcon(ico.Handle, System.Windows.Int32Rect.Empty, System.Windows.Media.Imaging.BitmapSizeOptions.FromEmptyOptions());
+                        tmp.Freeze();
+                        img = tmp;
+                    }
+                    else if (f.Type == FileType.folder && !filesIcons.ContainsKey(f.ExtensionID))
+                    {
+                        Icon ico = System.Drawing.Icon.ExtractAssociatedIcon(Environment.GetEnvironmentVariable("windir") + "\\explorer.exe");
+                        var tmp = System.Windows.Interop.Imaging.CreateBitmapSourceFromHIcon(ico.Handle, System.Windows.Int32Rect.Empty, System.Windows.Media.Imaging.BitmapSizeOptions.FromEmptyOptions());
+                        tmp.Freeze();
+                        img = tmp;
+                        filesIcons.Add(f.ExtensionID, img);
+                    }
+                    else
+                        img = filesIcons[f.ExtensionID];
+                    var content = char.ToUpper(f.FileName[0]) + f.FileName.Substring(1);
+                    if (!string.IsNullOrEmpty(f.DisplayName))
+                        content = char.ToUpper(f.DisplayName[0]) + f.DisplayName.Substring(1);
+                    items.Add(new DropDownItem { ID = f.ID, Content = content, Path = f.FileLocation, Option = f.FileLocation, ImgSrc = img, TotalTimesUsed = f.TotalUsed, LastUsed = f.LastUsed });
+                }
+                else { DatabaseManager.DeleteFromFilesTable(f.ID); }
            }
            return items;
         }
+
+        #endregion
 
         #region OperatingModes
         private async Task<List<DropDownItem>> AppSearch(string text)
@@ -400,11 +422,33 @@ namespace AppLauncher
         private async Task<List<DropDownItem>> Commands(string text)
         {
             mode = "command";
-            List<DropDownItem> commandList = new List<DropDownItem>();                     
-            commandList.Add(new DropDownItem { Content = "-Outlook", Path = "https://Outlook.com" });
-            commandList.Add(new DropDownItem { Content = "-Asana", Path = "https://Asana.com" });
-            commandList.Add(new DropDownItem { Content = "-Gmail", Path = "https://Gmail.com" }); 
-            return commandList.Where(x => x.Content.ToLower().StartsWith(text.ToLower())).ToList();
+
+            if (!Dispatcher.CheckAccess()) 
+            {
+                Dispatcher.Invoke(() => ContentColumn.Width = 200, DispatcherPriority.Normal);
+                Dispatcher.Invoke(() => OptionColumn.Width = 350, DispatcherPriority.Normal);
+            }
+            else
+            {
+                ContentColumn.Width = 300;
+                OptionColumn.Width = 250;
+            }
+            List<Command> commandList = new List<Command>();
+            List<DropDownItem> toReturn = new List<DropDownItem>();           
+            commandList = DatabaseManager.SelectFromCommandsTable(text);
+            if (commandList.Count == 0)
+            {
+                commandList.Add(new Command { Name = "-Outlook", Path = "https://Outlook.com" });
+                commandList.Add(new Command { Name = "-Asana", Path = "https://Asana.com" });
+                commandList.Add(new Command { Name = "-Gmail", Path = "https://Gmail.com" });
+                commandList.Add(new Command { Name = "-Visual Studio", Path = @"C:\Program Files (x86)\Microsoft Visual Studio 14.0\Common7\IDE\devenv.exe" });
+                DatabaseManager.WriteCommandsTable(commandList);
+            }
+            foreach (var c in commandList)
+            {
+                toReturn.Add(new DropDownItem { Content = c.Name, Path = c.Path, ID = c.ID, Option = c.Path, TotalTimesUsed = c.TotalUsed });
+            }
+            return toReturn.Where(x => x.Content.ToLower().StartsWith(text.ToLower())).OrderByDescending(x=>x.TotalTimesUsed).ToList();
         }
 
         private void DropDownAdd(DropDownItem item)
@@ -413,6 +457,7 @@ namespace AppLauncher
                 ListView1.SelectedItem = ListView1.Items[0];
                 ListView1.Visibility = Visibility.Visible;
         }
+
         #endregion
 
         #region UI
@@ -625,6 +670,7 @@ namespace AppLauncher
             }
 
         }
+
         #endregion
 
 
