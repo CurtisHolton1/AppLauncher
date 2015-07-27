@@ -200,53 +200,7 @@ namespace AppLauncher
 
         private async Task<List<DropDownItem>> Search(string text, int type)
         {
-            List<DropDownItem> items = new List<DropDownItem>();
-
-            //if (type == 0)
-            //{
-            //    var files = software.AsParallel().OrderByDescending(x => x.TotalUsed).Where(x => x.FileName.ToLower().Contains(text.ToLower()) && x.FileName.ToLower().StartsWith(text.ToLower())).Take(10).ToList();
-            //    for (int i = 0; i < files.Count; i++)
-            //    {
-            //        var f = files[i];
-            //        if (File.Exists(f.FileLocation))
-            //        {
-            //            Icon ico = System.Drawing.Icon.ExtractAssociatedIcon(f.FileLocation);
-            //            var img = System.Windows.Interop.Imaging.CreateBitmapSourceFromHIcon(ico.Handle, System.Windows.Int32Rect.Empty, System.Windows.Media.Imaging.BitmapSizeOptions.FromEmptyOptions());
-            //            img.Freeze();
-            //            items.Add(new DropDownItem { Content = f.FileName, Path = f.FileLocation, Option = f.FileLocation, ImgSrc = img });
-            //        }
-            //        else
-            //        {
-            //            software.Remove(software.FirstOrDefault(x => x.FileLocation.Equals(f.FileLocation)));
-            //            i--;
-            //        }
-            //    }
-            //}
-            //else if (type == 1)
-            //{
-            //    var files = allFiles.AsParallel().OrderByDescending(x => x.TotalUsed).Where(x => x.FileName.ToLower().Contains(text.ToLower()) && x.FileName.ToLower().StartsWith(text.ToLower())).Take(10).ToList();
-            //    for (int i = 0; i < files.Count; i++)
-            //    {
-            //        var f = files[i];
-            //        if (File.Exists(f.FileLocation))
-            //        {
-            //            if (!filesIcons.ContainsKey(f.Extension))
-            //            {
-            //                Icon ico = System.Drawing.Icon.ExtractAssociatedIcon(f.FileLocation);
-            //                var img = System.Windows.Interop.Imaging.CreateBitmapSourceFromHIcon(ico.Handle, System.Windows.Int32Rect.Empty, System.Windows.Media.Imaging.BitmapSizeOptions.FromEmptyOptions());
-            //                img.Freeze();
-            //                filesIcons.Add(f.Extension, img);
-            //            }
-            //            items.Add(new DropDownItem { Content = f.FileName, Path = f.FileLocation, Option = f.FileLocation, ImgSrc = filesIcons[f.Extension], TotalTimesUsed = f.TotalUsed, LastUsed = f.LastUsed });
-            //        }
-            //        else
-            //        {
-            //            allFiles.Remove(allFiles.FirstOrDefault(x => x.FileLocation.Equals(f.FileLocation)));
-            //            i--;
-            //        }
-            //    }
-            //}
-
+            List<DropDownItem> items = new List<DropDownItem>();        
             if (string.IsNullOrEmpty(text))
             {
                 return new List<DropDownItem>();
@@ -262,9 +216,7 @@ namespace AppLauncher
             }
            all = all.OrderByDescending(x => x.TotalUsed).Take(15).ToList();
            foreach (var f in all)
-           {
-                if (File.Exists(f.FileLocation))
-                {
+           {                
                     System.Windows.Media.Imaging.BitmapSource img;
                     if ((f.Type == FileType.file) && !filesIcons.ContainsKey(f.ExtensionID))
                     {
@@ -295,8 +247,7 @@ namespace AppLauncher
                     if (!string.IsNullOrEmpty(f.DisplayName))
                         content = char.ToUpper(f.DisplayName[0]) + f.DisplayName.Substring(1);
                     items.Add(new DropDownItem { ID = f.ID, Content = content, Path = f.FileLocation, Option = f.FileLocation, ImgSrc = img, TotalTimesUsed = f.TotalUsed, LastUsed = f.LastUsed });
-                }
-                else { DatabaseManager.DeleteFromFilesTable(f.ID); }
+            
            }
            return items;
         }
