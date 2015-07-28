@@ -21,8 +21,7 @@ namespace CurtInstaller.ViewModels
         }
         
         public async Task<string> InstallWrapper(System.IProgress<double> progressIndicator)
-        {
-            
+        {  
             try
             {
                 if (!string.IsNullOrEmpty(StartupMode) && StartupMode.Equals("Update"))
@@ -32,7 +31,6 @@ namespace CurtInstaller.ViewModels
                      model.Location = System.IO.Directory.GetParent(model.Location).FullName;
 
                 }
-  
                 var success = await Task.Run(() => model.Download(StartupMode));
                 //////////////////////////////////////
                 // success = false;
@@ -77,11 +75,5 @@ namespace CurtInstaller.ViewModels
             }
             return "";
         }
-
-
-
-
-
-
     }
 }

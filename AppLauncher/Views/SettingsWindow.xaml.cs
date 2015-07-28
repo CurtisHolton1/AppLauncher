@@ -91,7 +91,7 @@ namespace AppLauncher
         {
             try
             {
-                string sMessageBoxText = "It may take some time for changes to take effect, would you like to continue?";
+                string sMessageBoxText = "Confirm changes?";
                 string sCaption = "Curt";
                 MessageBoxButton btnMessageBox = MessageBoxButton.YesNo;
                 MessageBoxImage icnMessageBox = MessageBoxImage.Warning;
@@ -123,6 +123,22 @@ namespace AppLauncher
         private void ApplyCommands_Click(object sender, RoutedEventArgs e)
         {
             DatabaseManager.WriteCommandsTable(CommandList);
+        }
+
+        private void HeaderCheckBox_Checked(object sender, RoutedEventArgs e)
+        {
+            foreach(var ex in ExtensionList)
+            {
+                ex.IsChecked = true;
+            }
+        }
+
+        private void HeaderCheckBox_Unchecked(object sender, RoutedEventArgs e)
+        {
+            foreach (var ex in ExtensionList)
+            {
+                ex.IsChecked = false;
+            }
         }
     }
 }

@@ -10,23 +10,28 @@
         </Grid>
         <Grid HorizontalAlignment="Right" Margin="0,0,0,0" Width="213" >
             <TextBlock Text="Extensions to index for 'Find' Feature" Margin="0,0,0,0" Height="Auto" VerticalAlignment="Top" HorizontalAlignment="Left"></TextBlock>
-            <ListView Height="519" 
+            <ListView Height="500" 
               HorizontalAlignment="Left" 
               Name="listView1" 
               VerticalAlignment="Top" 
-              Width="200"
+              Width="200"              
               Margin="0,21,0,0"
               ItemsSource="{Binding ExtensionList, UpdateSourceTrigger=PropertyChanged}"
-              IsSynchronizedWithCurrentItem="True">
+              IsSynchronizedWithCurrentItem="True"
+              ScrollViewer.HorizontalScrollBarVisibility="Disabled">
                 <ListView.View>
-                    <GridView>
+                    <GridView AllowsColumnReorder="False" >
+                        
                         <GridView.Columns>
                             <GridViewColumn>
+                                <GridViewColumn.HeaderTemplate>
+                                    <DataTemplate>
+                                    <CheckBox Name="HeaderCheckBox" Checked="HeaderCheckBox_Checked" Unchecked="HeaderCheckBox_Unchecked" ></CheckBox>
+                                    </DataTemplate>
+                                </GridViewColumn.HeaderTemplate>
                                 <GridViewColumn.CellTemplate>
                                     <DataTemplate>
                                         <CheckBox Tag="{Binding Type}" IsChecked="{Binding IsChecked, UpdateSourceTrigger=PropertyChanged}" />
-
-
                                     </DataTemplate>
                                 </GridViewColumn.CellTemplate>
                             </GridViewColumn>
@@ -39,7 +44,7 @@
         </Grid>
         <Grid HorizontalAlignment="Stretch" Margin="0,20,250,0">
             <TextBlock Text="Commands" HorizontalAlignment="Center" Margin="0,5,0,0"></TextBlock>
-            <DataGrid x:Name="CommandsGrid" ItemsSource="{Binding CommandList, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"  HorizontalAlignment="Left" Width="534" IsSynchronizedWithCurrentItem="False" HorizontalGridLinesBrush="#FF5D5A5A" VerticalGridLinesBrush="#FF5D5A5A" GridLinesVisibility="Vertical" AlternationCount="1" AreRowDetailsFrozen="True" AlternatingRowBackground="#FFA397EE" AutoGenerateColumns="False" Margin="0,24,0,30">
+            <DataGrid x:Name="CommandsGrid" ItemsSource="{Binding CommandList, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"  HorizontalAlignment="Left" Width="534"  IsSynchronizedWithCurrentItem="False" HorizontalGridLinesBrush="#FF5D5A5A" VerticalGridLinesBrush="#FF5D5A5A" GridLinesVisibility="Vertical" AlternationCount="1" AreRowDetailsFrozen="True" AlternatingRowBackground="#FFA397EE" AutoGenerateColumns="False" Margin="0,24,0,41">
                 <DataGrid.Columns>
                     <DataGridTextColumn Header="Name" Binding="{Binding Name}"></DataGridTextColumn>
                     <DataGridTextColumn Header="Path" Binding="{Binding Path}" Width="300"></DataGridTextColumn>
