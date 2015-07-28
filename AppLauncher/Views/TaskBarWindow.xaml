@@ -9,6 +9,6 @@
         Title="TaskBarWindow" Height="300" Width="300" Visibility="Hidden">
     
     <Grid>
-        <tb:TaskbarIcon IconSource="/Content/blah1.ico" TrayLeftMouseDown="TaskbarIcon_TrayLeftMouseDown" />
+        <tb:TaskbarIcon IconSource="/Content/LetterC.ico" TrayLeftMouseDown="TaskbarIcon_TrayLeftMouseDown" />
     </Grid>
 </Window>
