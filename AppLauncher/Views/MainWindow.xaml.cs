@@ -16,6 +16,7 @@ using System.Configuration;
 using Curt.shared.Models;
 using System.Drawing;
 using System.IO;
+using AppLauncher.Views;
 
 namespace AppLauncher
 {
@@ -49,6 +50,7 @@ namespace AppLauncher
             timer.Interval = TimeSpan.FromMinutes(30);
             timer.Tick += timer_Tick;
             timer.Start();
+           
             
         }     
         private async Task<string> Start()
@@ -65,6 +67,8 @@ namespace AppLauncher
             HotKey _hotKey = new HotKey(key, keyMod, OnHotKeyHandler);
             Startup.SetStartup();        
             filesIcons = new Dictionary<int, BitmapSource>();
+            TaskBarWindow taskBar = new TaskBarWindow();
+            WindowWatcher.AddWindow(taskBar);
             //using (StreamReader sr = new StreamReader("WhiteListTmp.txt"))
             //{
             //    var all = sr.ReadToEnd();
