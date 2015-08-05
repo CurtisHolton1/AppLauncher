@@ -35,6 +35,7 @@ namespace AppLauncher
         bool timerFlag;
         bool updateFlag;
         int tickCount;
+        IEnumerable<FileInfo> thing2;
         //ILookup<string, string> fileTable;
        // Lookup<string, FileItem> allFiles;
         Dictionary<int, BitmapSource> filesIcons;
@@ -43,15 +44,13 @@ namespace AppLauncher
         {
             InitializeComponent();
             WindowWatcher.AddWindow(this);
-            FileWatcher watcher = new FileWatcher("C:\\");
+            FileWatcher watcher = new FileWatcher("C:\\");        
             Start();
             updateFlag = true;
             timerFlag = false;
             timer.Interval = TimeSpan.FromMinutes(30);
             timer.Tick += timer_Tick;
-            timer.Start();
-           
-            
+            timer.Start();               
         }     
         private async Task<string> Start()
         {
@@ -69,17 +68,15 @@ namespace AppLauncher
             filesIcons = new Dictionary<int, BitmapSource>();
             TaskBarWindow taskBar = new TaskBarWindow();
             WindowWatcher.AddWindow(taskBar);
-            //using (StreamReader sr = new StreamReader("WhiteListTmp.txt"))
-            //{
-            //    var all = sr.ReadToEnd();
-            //    var tmp = all.Split('\t').ToList();
-            //    var toWrite = new List<Extension>();
-            //    foreach(var t in tmp)
-            //    {
-            //        toWrite.Add(new Extension { Type = t, IsChecked = true });
-            //    }
-            //    DatabaseManager.CreateWhiteListTable(toWrite);
-            //}
+            var commandList = DatabaseManager.SelectFromCommandsTable("");
+            if (commandList.Count == 0)
+            {
+                commandList.Add(new Command { Name = "-Outlook", Path = "https://Outlook.com" });
+                commandList.Add(new Command { Name = "-Asana", Path = "https://Asana.com" });
+                commandList.Add(new Command { Name = "-Gmail", Path = "https://Gmail.com" });
+                commandList.Add(new Command { Name = "-Visual Studio", Path = @"C:\Program Files (x86)\Microsoft Visual Studio 14.0\Common7\IDE\devenv.exe" });
+                DatabaseManager.WriteCommandsTable(commandList);
+            }
             return "";
         }
         private async void timer_Tick(object sender, EventArgs e)
@@ -220,7 +217,13 @@ namespace AppLauncher
             }
            all = all.OrderByDescending(x => x.TotalUsed).Take(15).ToList();
            foreach (var f in all)
-           {                
+           {
+                if (f.Type != FileType.folder && !File.Exists(f.FileLocation))
+                {
+                    DatabaseManager.DeleteFromFilesTable(f.ID);
+                }
+                else
+                {
                     System.Windows.Media.Imaging.BitmapSource img;
                     if ((f.Type == FileType.file) && !filesIcons.ContainsKey(f.ExtensionID))
                     {
@@ -251,7 +254,7 @@ namespace AppLauncher
                     if (!string.IsNullOrEmpty(f.DisplayName))
                         content = char.ToUpper(f.DisplayName[0]) + f.DisplayName.Substring(1);
                     items.Add(new DropDownItem { ID = f.ID, Content = content, Path = f.FileLocation, Option = f.FileLocation, ImgSrc = img, TotalTimesUsed = f.TotalUsed, LastUsed = f.LastUsed });
-            
+                }
            }
            return items;
         }
@@ -390,14 +393,7 @@ namespace AppLauncher
             List<Command> commandList = new List<Command>();
             List<DropDownItem> toReturn = new List<DropDownItem>();           
             commandList = DatabaseManager.SelectFromCommandsTable(text);
-            if (commandList.Count == 0)
-            {
-                commandList.Add(new Command { Name = "-Outlook", Path = "https://Outlook.com" });
-                commandList.Add(new Command { Name = "-Asana", Path = "https://Asana.com" });
-                commandList.Add(new Command { Name = "-Gmail", Path = "https://Gmail.com" });
-                commandList.Add(new Command { Name = "-Visual Studio", Path = @"C:\Program Files (x86)\Microsoft Visual Studio 14.0\Common7\IDE\devenv.exe" });
-                DatabaseManager.WriteCommandsTable(commandList);
-            }
+            DatabaseManager.WriteCommandsTable(commandList);
             foreach (var c in commandList)
             {
                 toReturn.Add(new DropDownItem { Content = c.Name, Path = c.Path, ID = c.ID, Option = c.Path, TotalTimesUsed = c.TotalUsed });
@@ -450,7 +446,7 @@ namespace AppLauncher
                     ListView1.Items.Clear();
                     if (item.Content.Equals("Please use a valid expression"))
                         item.Option = "";
-                    DropDownAdd(item);
+                    DropDownAdd(item); 
                 }
                 else
                 {
