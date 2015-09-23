@@ -139,11 +139,6 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Content\Loading.gif">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </EmbeddedResource>
-  </ItemGroup>
-  <ItemGroup>
     <Content Include="Resources\Loading.gif">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
