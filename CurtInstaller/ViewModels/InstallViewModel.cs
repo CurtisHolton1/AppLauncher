@@ -13,6 +13,7 @@ namespace CurtInstaller.ViewModels
     {
         private InstallModel model;
         public string StartupMode { get; set; }
+        
         public InstallViewModel()
         {
             model = Factory.GetInstallModel();

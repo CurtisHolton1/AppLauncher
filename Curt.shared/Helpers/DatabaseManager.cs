@@ -136,7 +136,6 @@ namespace Curt.shared
                 while (reader.Read())
                 {
                     FilesFound.Add(new FileItem { ID = Convert.ToInt32(reader["ID"].ToString()), FileName = reader["FileName"].ToString(), ExtensionID = Convert.ToInt32(reader["ExtensionID"].ToString()), Type = (FileType)Convert.ToInt32(reader["Type"].ToString()), DisplayName = reader["DisplayName"].ToString(), LastUsed = Convert.ToDateTime(reader["LastUsed"].ToString()), TotalUsed = Convert.ToInt32(reader["TotalUsed"].ToString()), FileLocation = reader["FileLocation"].ToString() });
-                    //FilesFound.Add(new FileItem { FileName = reader["FileName"].ToString(), DisplayName = reader["DisplayName"].ToString(), Type = (FileType)Convert.ToInt32(reader["Type"].ToString()), TotalUsed = Convert.ToInt32(reader["TotalUsed"].ToString()), FileLocation = reader["FileLocation"].ToString() });
                 }
                 SqlConnection.Close();
                 CurrentSearch = FilesFound;
@@ -144,7 +143,7 @@ namespace Curt.shared
             else
             {
                 FilesFound = CurrentSearch;
-                return FilesFound.Where(x => x.FileName.ToLower().StartsWith(text.ToLower()) && x.Type == (FileType)type).ToList();
+                return FilesFound.Where(x => x.FileName.ToLower().StartsWith(text.ToLower()) && x.Type == (FileType)type).OrderByDescending(x=>x.TotalUsed).Take(15).ToList();             
             }
             return FilesFound;
         }
@@ -189,8 +188,7 @@ namespace Curt.shared
                 cmd.ExecuteNonQuery();
                 SQLiteDataReader reader = cmd.ExecuteReader();
                 while (reader.Read())
-                {
-                    //FilesFound.Add(new FileItem { ID = Convert.ToInt32(reader["ID"].ToString()), FileLocation = reader["FileLocation"].ToString(), FileName = reader["FileName"].ToString(), DisplayName = reader["DisplayName"].ToString(), ExtensionID = Convert.ToInt32(reader["ExtensionID"].ToString()), Type = (FileType)Convert.ToInt32(reader["Type"].ToString()), LastUsed = Convert.ToDateTime(reader["LastUsed"].ToString()), TotalUsed = Convert.ToInt32(reader["TotalUsed"].ToString()) });
+                {                  
                     FilesFound.Add(new FileItem { ID = Convert.ToInt32(reader["ID"].ToString()), FileName = reader["FileName"].ToString(), ExtensionID = Convert.ToInt32(reader["ExtensionID"].ToString()), Type = (FileType)Convert.ToInt32(reader["Type"].ToString()), DisplayName = reader["DisplayName"].ToString(), LastUsed = Convert.ToDateTime(reader["LastUsed"].ToString()), TotalUsed = Convert.ToInt32(reader["TotalUsed"].ToString()),  FileLocation = reader["FileLocation"].ToString() });
                 }
                 SqlConnection.Close();
@@ -199,8 +197,9 @@ namespace Curt.shared
             else
             {
                 FilesFound = CurrentSearch;
-                return FilesFound.Where(x => x.FileName.ToLower().StartsWith(text.ToLower()) && x.Type >= (FileType)type).ToList();
-            }
+                 return FilesFound.Where(x => x.FileName.ToLower().StartsWith(text.ToLower()) && x.Type >= (FileType)type).OrderByDescending(x => x.TotalUsed).Take(15).ToList();
+               
+           }
             return FilesFound;
         }
 
@@ -226,8 +225,7 @@ namespace Curt.shared
 
         public static bool InsertIntoFilesTable(FileItem item)
         {
-            
-            try
+             try
             {
 
                 var SqlConnection = new SQLiteConnection("Data Source=" + DBLocation + "; Version=3");
