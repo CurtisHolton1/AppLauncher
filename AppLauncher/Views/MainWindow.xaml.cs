@@ -44,7 +44,7 @@ namespace AppLauncher
         {
             InitializeComponent();
             WindowWatcher.AddWindow(this);
-            FileWatcher watcher = new FileWatcher("C:\\");        
+            //FileWatcher watcher = new FileWatcher("C:\\");        
             Start();
             updateFlag = true;
             timerFlag = false;
@@ -69,14 +69,13 @@ namespace AppLauncher
             TaskBarWindow taskBar = new TaskBarWindow();
             WindowWatcher.AddWindow(taskBar);
             var commandList = DatabaseManager.SelectFromCommandsTable("");
-            if (commandList.Count == 0)
-            {
-                commandList.Add(new Command { Name = "-Outlook", Path = "https://Outlook.com" });
-                commandList.Add(new Command { Name = "-Asana", Path = "https://Asana.com" });
-                commandList.Add(new Command { Name = "-Gmail", Path = "https://Gmail.com" });
-                commandList.Add(new Command { Name = "-Visual Studio", Path = @"C:\Program Files (x86)\Microsoft Visual Studio 14.0\Common7\IDE\devenv.exe" });
-                DatabaseManager.WriteCommandsTable(commandList);
-            }
+            //if (commandList.Count == 0)
+            //{
+            //    commandList.Add(new Command { Name = "-Outlook", Path = "https://Outlook.com" });
+            //    commandList.Add(new Command { Name = "-Asana", Path = "https://Asana.com" });
+            //    commandList.Add(new Command { Name = "-Gmail", Path = "https://Gmail.com" });
+            //    commandList.Add(new Command { Name = "-Visual Studio", Path = @"C:\Program Files (x86)\Microsoft Visual Studio 14.0\Common7\IDE\devenv.exe" });
+            //}
             return "";
         }
         private async void timer_Tick(object sender, EventArgs e)
@@ -393,7 +392,6 @@ namespace AppLauncher
             List<Command> commandList = new List<Command>();
             List<DropDownItem> toReturn = new List<DropDownItem>();           
             commandList = DatabaseManager.SelectFromCommandsTable(text);
-            DatabaseManager.WriteCommandsTable(commandList);
             foreach (var c in commandList)
             {
                 toReturn.Add(new DropDownItem { Content = c.Name, Path = c.Path, ID = c.ID, Option = c.Path, TotalTimesUsed = c.TotalUsed });

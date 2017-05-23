@@ -266,7 +266,7 @@ namespace Curt.shared
         {
             FileItem itemToReturn = new FileItem();
             var SqlConnection = new SQLiteConnection("Data Source=" + DBLocation + "; Version=3");
-            SqlConnection.Open();
+            SqlConnection.Open(); 
             var sql = "Select * FROM FilesFound WHERE ID = " + ID;
             var cmd = new SQLiteCommand(sql, SqlConnection);
             cmd.ExecuteNonQuery();
@@ -494,7 +494,7 @@ namespace Curt.shared
                 var cmd = new SQLiteCommand(sql, SqlConnection);
                 cmd.ExecuteNonQuery();
        
-                if (toWrite != null)
+                if (toWrite != null) 
                 {
                     WriteCommandsTable(toWrite);
                 }
@@ -513,10 +513,9 @@ namespace Curt.shared
                 {
                     using (var transaction = SqlConnection.BeginTransaction())
                     {
-
+                  
                         foreach (var c in toWrite)
                         {
-
                             insertCmd.CommandText = "INSERT INTO Commands(Name,Path,TotalUsed) VALUES ('" + c.Name + "' , '" + c.Path + "' , '" + c.TotalUsed + "')";
                             insertCmd.ExecuteNonQuery();
                         }
