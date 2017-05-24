@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2013
-VisualStudioVersion = 12.0.31101.0
+# Visual Studio 15
+VisualStudioVersion = 15.0.26228.4
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AppLauncher", "AppLauncher\AppLauncher.csproj", "{C1CE421E-5499-4A21-ADD8-C61ABD069679}"
 EndProject
@@ -15,6 +15,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CurtInstaller", "CurtInstaller\CurtInstaller.csproj", "{B59D0B36-2BA5-4302-B699-C54844841DBC}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Curt.shared", "Curt.shared\Curt.shared.csproj", "{173BE736-1BCA-4C07-9E2D-18F56602D7C7}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AppLauncherBuilder", "AppLauncherBuilder\AppLauncherBuilder.csproj", "{B1E73468-6715-4390-88F8-1E5BBBBC72C0}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -34,6 +36,10 @@ Global
 		{173BE736-1BCA-4C07-9E2D-18F56602D7C7}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{173BE736-1BCA-4C07-9E2D-18F56602D7C7}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{173BE736-1BCA-4C07-9E2D-18F56602D7C7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B1E73468-6715-4390-88F8-1E5BBBBC72C0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B1E73468-6715-4390-88F8-1E5BBBBC72C0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B1E73468-6715-4390-88F8-1E5BBBBC72C0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B1E73468-6715-4390-88F8-1E5BBBBC72C0}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
