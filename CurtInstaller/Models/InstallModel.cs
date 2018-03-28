@@ -43,7 +43,7 @@ namespace CurtInstaller.Models
            }
        }
 
-       private async Task<bool> InstallFiles()
+       public async Task<bool> InstallFiles()
        {          
            try
            {                        
@@ -56,7 +56,7 @@ namespace CurtInstaller.Models
            catch (Exception exc)
            {
                System.Windows.MessageBox.Show("error in Installfiles:" + exc.Message);
-               return false;
+               throw exc;
            }
        }
 

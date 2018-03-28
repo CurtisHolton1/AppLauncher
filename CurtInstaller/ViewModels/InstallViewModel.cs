@@ -18,7 +18,7 @@ namespace CurtInstaller.ViewModels
         {
             model = Factory.GetInstallModel();
             SharedHelper.KillProcess("AppLauncher");
-            DatabaseManager.SetDBLocation(model.Location + "\\AppLauncher\\AppLauncher\\FilesData.sqlite");
+            DatabaseManager.SetDBLocation(model.Location + "\\AppLauncher\\FilesData.sqlite");
         }
         
         public async Task<string> InstallWrapper(System.IProgress<double> progressIndicator)
@@ -32,17 +32,19 @@ namespace CurtInstaller.ViewModels
                      model.Location = System.IO.Directory.GetParent(model.Location).FullName;
 
                 }
-                var success = await Task.Run(() => model.Download(StartupMode));
+                //                var success = await Task.Run(() => model.Download(StartupMode));
+
+                await Task.Run(() => model.InstallFiles());
                 //////////////////////////////////////
                 // success = false;
                 ///////////////////////////////////////
-                if (success)
-                {
-                    if (string.IsNullOrEmpty(StartupMode)) //install mode
+                //                if (success)
+                //                {
+                if (string.IsNullOrEmpty(StartupMode)) //install mode
                     {
                         DatabaseManager.CreateDB();
 
-                        using (StreamReader sr = new StreamReader("WhiteListTmp.txt"))
+                        using (StreamReader sr = new StreamReader("Resources\\WhiteListTmp.txt"))
                         {
                             var toWrite = new List<Extension>();
                             var all = sr.ReadToEnd();
@@ -62,13 +64,13 @@ namespace CurtInstaller.ViewModels
                         //File.Delete("WhiteListTmp.txt");
                         /////////////////////////////
                     }
-                }
-                else
-                { 
-                    model.RollBack();
-                }
-                    model.StartLauncher();
-                    System.Environment.Exit(0);
+//                }
+//                else
+//                { 
+//                    model.RollBack();
+//                }
+//                    model.StartLauncher();
+//                    System.Environment.Exit(0);
                 }
             catch (Exception e)
             {

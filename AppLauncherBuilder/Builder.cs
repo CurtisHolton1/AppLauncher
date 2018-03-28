@@ -11,12 +11,14 @@ namespace AppLauncherBuilder
     {
         static void Main(string[] args)
         {
+
+            string basePath = "C:\\code\\AppLauncher";
             Console.WriteLine("Starting Build");
             List<string> filePaths = new List<string>();
             List<string> dirPaths = new List<string>();
-            string appLauncherBase = Directory.GetParent(Directory.GetCurrentDirectory()) + "\\AppLauncher\\bin\\release";
-            string installBase = Directory.GetParent(Directory.GetCurrentDirectory()) + "\\CurtInstaller\\bin\\release";
-            string contentBase = Directory.GetParent(Directory.GetCurrentDirectory()) + "\\AppLauncher";
+            string appLauncherBase = basePath +  "\\AppLauncher\\bin\\Release";
+            string installBase = basePath + "\\CurtInstaller\\bin\\Release";
+            string contentBase = basePath + "\\AppLauncher";
 
             filePaths.Add("AppLauncher.exe");
             filePaths.Add("AppLauncher.exe.config");
@@ -36,7 +38,7 @@ namespace AppLauncherBuilder
             filePaths.Add("Curt.shared.dll");
             filePaths.Add("CurtInstaller.exe.config");
             filePaths.Add("System.Data.SQLite.dll");
-            filePaths.Add("WhiteListTmp.txt");
+            filePaths.Add("Resources\\WhiteListTmp.txt");
             dirPaths.Add("x64");
             dirPaths.Add("x86");
             dirPaths.Add("Resources");
@@ -62,7 +64,7 @@ namespace AppLauncherBuilder
             }
             foreach (string path in filePaths)
             {
-                 File.Copy(componentPath + "\\" + path, destinationPath + "\\" + componentName + "\\" + path, true);
+                File.Copy(componentPath + "\\" + path, destinationPath + "\\" + componentName + "\\" + path, true);
             }
             foreach (string dir in dirPaths)
             {
@@ -75,6 +77,8 @@ namespace AppLauncherBuilder
                 foreach (string newPath in Directory.GetFiles(fullSource, "*.*", SearchOption.AllDirectories))
                     File.Copy(newPath, newPath.Replace(fullSource, fullDest), true);
             }
+            
+            
         }
 
       
